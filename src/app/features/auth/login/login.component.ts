@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -38,8 +39,10 @@ export class LoginComponent {
       next: () => {
         this.router.navigate(['/dashboard']);
       },
-      error: (err: Error) => {
-        this.error.set(err.message || 'خطا در ورود');
+      error: (err: HttpErrorResponse) => {
+        const message =
+          (err.error as { message?: string })?.message ?? 'ایمیل یا رمز عبور اشتباه است';
+        this.error.set(message);
         this.loading.set(false);
       },
       complete: () => this.loading.set(false),

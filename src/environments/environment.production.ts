@@ -1,6 +1,6 @@
 export const environment = {
-  production: false,
-  apiBaseUrl: 'http://localhost:5042/api/v1/admin',
+  production: true,
+  apiBaseUrl: 'https://kidamooz-back.liara.run/api/v1/admin',
   useMock: false,
   mobileAppDeepLink: 'kidamooz://story',
 };

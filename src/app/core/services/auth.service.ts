@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, delay, of, throwError } from 'rxjs';
+import { Observable, delay, of, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthTokens, LoginRequest } from '../models/auth.model';
 import { MOCK_ADMIN } from '../data/mock-data';
@@ -28,7 +28,9 @@ export class AuthService {
       return throwError(() => new Error('ایمیل یا رمز عبور اشتباه است')).pipe(delay(400));
     }
 
-    return this.http.post<AuthTokens>(`${environment.apiBaseUrl}/auth/login`, credentials);
+    return this.http
+      .post<AuthTokens>(`${environment.apiBaseUrl}/auth/login`, credentials)
+      .pipe(tap((tokens) => this.storeTokens(tokens)));
   }
 
   logout(): Observable<void> {
@@ -37,11 +39,18 @@ export class AuthService {
       return of(undefined).pipe(delay(200));
     }
 
-    return this.http.post<void>(`${environment.apiBaseUrl}/auth/logout`, {});
+    const refreshToken = localStorage.getItem(REFRESH_KEY) ?? '';
+    return this.http
+      .post<void>(`${environment.apiBaseUrl}/auth/logout`, { refreshToken })
+      .pipe(tap(() => this.clearTokens()));
   }
 
   getAccessToken(): string | null {
     return localStorage.getItem(TOKEN_KEY);
+  }
+
+  getRefreshToken(): string | null {
+    return localStorage.getItem(REFRESH_KEY);
   }
 
   isAuthenticated(): boolean {

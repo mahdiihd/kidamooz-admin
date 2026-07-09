@@ -704,16 +704,29 @@ builder.Services.AddCors(o => o.AddPolicy("Admin", p => p
 
 ## اتصال فرانت ادمین
 
-فایل `src/environments/environment.ts`:
+**Development** — `Admin/src/environments/environment.ts`:
 
 ```typescript
 export const environment = {
   production: false,
-  apiBaseUrl: 'https://localhost:5001/api/v1/admin',
+  apiBaseUrl: 'http://localhost:5042/api/v1/admin',
   useMock: false,
   mobileAppDeepLink: 'kidamooz://story',
 };
 ```
+
+**Production** — `Admin/src/environments/environment.production.ts`:
+
+```typescript
+export const environment = {
+  production: true,
+  apiBaseUrl: 'https://kidamooz-back.liara.run/api/v1/admin',
+  useMock: false,
+  mobileAppDeepLink: 'kidamooz://story',
+};
+```
+
+راهنمای کامل اتصال: `Back/docs/ADMIN_INTEGRATION.md`
 
 ---
 
