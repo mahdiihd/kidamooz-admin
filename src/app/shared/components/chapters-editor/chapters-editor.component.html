@@ -1,0 +1,43 @@
+<div class="chapters-editor" [formGroup]="form">
+  <div class="chapters-header">
+    <h3>فصل‌های قصه</h3>
+    <button type="button" class="btn btn--secondary btn--sm" (click)="addChapter()">+ فصل جدید</button>
+  </div>
+
+  @if (chapters.length === 0) {
+    <p class="empty">فصلی تعریف نشده — برای قصه‌های چندبخشی فصل اضافه کنید.</p>
+  }
+
+  <div formArrayName="chapters">
+    @for (chapter of chapters.controls; track $index; let i = $index) {
+      <div class="chapter-card" [formGroupName]="i">
+        <div class="chapter-card-header">
+          <span class="chapter-num">فصل {{ i + 1 }}</span>
+          <button type="button" class="btn btn--danger btn--sm" (click)="removeChapter(i)">حذف</button>
+        </div>
+
+        <app-localized-input formControlName="title" label="عنوان فصل" />
+
+        <div class="field">
+          <label>شروع (ثانیه)</label>
+          <input type="number" formControlName="startSeconds" min="0" />
+          @if (storyDuration()) {
+            <small>
+              {{ chapters.at(i).get('startSeconds')?.value | duration }}
+              از {{ storyDuration() | duration }}
+            </small>
+          }
+        </div>
+
+        <app-file-upload
+          label="تصویر فصل"
+          mediaType="cover"
+          accept="image/webp,image/jpeg,image/png"
+          hint="تصویر این فصل"
+          [initialUrl]="chapter.get('imageUrl')?.value ?? ''"
+          (urlChange)="onImageChange(i, $event)"
+        />
+      </div>
+    }
+  </div>
+</div>

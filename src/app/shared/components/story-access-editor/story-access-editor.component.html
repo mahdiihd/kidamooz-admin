@@ -1,0 +1,78 @@
+<div class="access-editor">
+  <h3>دسترسی و مخاطب</h3>
+  <p class="hint">قصه‌های محدود فقط برای گروه‌ها یا کاربران انتخاب‌شده در اپ نمایش داده می‌شوند.</p>
+
+  <div class="visibility-options">
+    <label class="visibility-option" [class.selected]="value().visibility === 'public'">
+      <input
+        type="radio"
+        name="visibility"
+        value="public"
+        [checked]="value().visibility === 'public'"
+        (change)="setVisibility('public')"
+      />
+      <span class="option-icon">🌍</span>
+      <span>
+        <strong>عمومی</strong>
+        <small>همه کاربران اپ</small>
+      </span>
+    </label>
+
+    <label class="visibility-option" [class.selected]="value().visibility === 'restricted'">
+      <input
+        type="radio"
+        name="visibility"
+        value="restricted"
+        [checked]="value().visibility === 'restricted'"
+        (change)="setVisibility('restricted')"
+      />
+      <span class="option-icon">🔒</span>
+      <span>
+        <strong>محدود</strong>
+        <small>فقط مخاطبان مشخص</small>
+      </span>
+    </label>
+  </div>
+
+  @if (value().visibility === 'restricted') {
+    <div class="audience-panel">
+      <div class="audience-section">
+        <h4>گروه‌های مخاطب</h4>
+        <div class="checkbox-grid">
+          @for (segment of segments(); track segment.id) {
+            <label class="check-item">
+              <input
+                type="checkbox"
+                [checked]="isSegmentSelected(segment.id)"
+                (change)="toggleSegment(segment.id)"
+              />
+              <span>
+                <strong>{{ segment.label }}</strong>
+                <small>{{ segment.description }}</small>
+              </span>
+            </label>
+          }
+        </div>
+      </div>
+
+      <div class="audience-section">
+        <h4>کاربران مشخص</h4>
+        <div class="checkbox-grid">
+          @for (user of users(); track user.id) {
+            <label class="check-item">
+              <input
+                type="checkbox"
+                [checked]="isUserSelected(user.id)"
+                (change)="toggleUser(user.id)"
+              />
+              <span>
+                <strong>{{ user.label }}</strong>
+                <small>{{ user.email }}</small>
+              </span>
+            </label>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

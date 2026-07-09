@@ -1,0 +1,113 @@
+<app-page-header
+  [title]="isEdit() ? 'ویرایش قصه' : 'قصه جدید'"
+  [subtitle]="isEdit() ? 'ویرایش اطلاعات و رسانه قصه' : 'ایجاد قصه جدید'"
+>
+  @if (previewUrl) {
+    <a [href]="previewUrl" class="btn btn--ghost" target="_blank" rel="noopener">📱 پیش‌نمایش اپ</a>
+  }
+  <a routerLink="/stories" class="btn btn--ghost">بازگشت</a>
+</app-page-header>
+
+<form [formGroup]="form" (ngSubmit)="submit()" class="form-layout">
+  <div class="form-main">
+    <section class="form-section">
+      <h2>اطلاعات پایه</h2>
+      <app-localized-input formControlName="title" label="عنوان" />
+      <app-localized-input
+        formControlName="description"
+        label="توضیحات"
+        [multiline]="true"
+        placeholderFa="توضیح کوتاه قصه..."
+        placeholderEn="Short story description..."
+      />
+    </section>
+
+    <section class="form-section">
+      <h2>رسانه</h2>
+      <app-file-upload
+        #coverUpload
+        label="کاور"
+        mediaType="cover"
+        accept="image/webp,image/jpeg,image/png"
+        hint="webp, jpg, png — حداکثر ۲ مگابایت"
+        (urlChange)="onCoverUrlChange($event)"
+      />
+
+      <app-file-upload
+        #audioUpload
+        label="فایل صوتی"
+        mediaType="audio"
+        accept="audio/mpeg,audio/mp4,audio/x-m4a"
+        [maxSizeMb]="50"
+        hint="mp3, m4a — حداکثر ۵۰ مگابایت"
+        (urlChange)="onAudioUrlChange($event)"
+      />
+
+      <div class="field">
+        <label for="duration">مدت زمان (ثانیه)</label>
+        <input id="duration" type="number" formControlName="durationSeconds" min="1" />
+      </div>
+    </section>
+
+    <section class="form-section">
+      <app-chapters-editor
+        formControlName="chapters"
+        [storyDuration]="form.controls.durationSeconds.value"
+      />
+    </section>
+
+    <section class="form-section">
+      <app-story-access-editor formControlName="access" />
+    </section>
+  </div>
+
+  <aside class="form-sidebar">
+    <section class="form-section">
+      <h2>تنظیمات</h2>
+
+      <div class="field">
+        <label for="category">دسته‌بندی</label>
+        <select id="category" formControlName="categoryId">
+          <option value="">انتخاب کنید</option>
+          @for (cat of categories(); track cat.id) {
+            <option [value]="cat.id">{{ cat.title | localized }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label for="ageMin">حداقل سن</label>
+          <input id="ageMin" type="number" formControlName="ageMin" min="0" />
+        </div>
+        <div class="field">
+          <label for="ageMax">حداکثر سن</label>
+          <input id="ageMax" type="number" formControlName="ageMax" min="0" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="sortOrder">ترتیب نمایش</label>
+        <input id="sortOrder" type="number" formControlName="sortOrder" min="0" />
+      </div>
+
+      <div class="checkbox-group">
+        <label>
+          <input type="checkbox" formControlName="featured" />
+          قصه ویژه
+        </label>
+        <label>
+          <input type="checkbox" formControlName="published" />
+          منتشر شود
+        </label>
+      </div>
+    </section>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn--primary btn--block" [disabled]="saving()">
+        {{ saving() ? 'در حال ذخیره...' : 'ذخیره' }}
+      </button>
+      <a routerLink="/stories" class="btn btn--ghost btn--block">انصراف</a>
+    </div>
+  </aside>
+</form>

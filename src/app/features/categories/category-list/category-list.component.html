@@ -1,0 +1,92 @@
+<app-page-header title="دسته‌بندی‌ها" subtitle="مدیریت دسته‌های قصه">
+  @if (sortMode()) {
+    <button type="button" class="btn btn--primary" [disabled]="savingOrder()" (click)="saveOrder()">
+      {{ savingOrder() ? 'در حال ذخیره...' : 'ذخیره ترتیب' }}
+    </button>
+    <button type="button" class="btn btn--ghost" (click)="toggleSortMode()">انصراف</button>
+  } @else {
+    <button type="button" class="btn btn--secondary" (click)="toggleSortMode()">مرتب‌سازی</button>
+    <a routerLink="/categories/new" class="btn btn--primary">دسته جدید</a>
+  }
+</app-page-header>
+
+@if (sortMode()) {
+  <p class="sort-hint">ردیف‌ها را با کشیدن جابجا کنید، سپس «ذخیره ترتیب» را بزنید.</p>
+}
+
+@if (loading()) {
+  <div class="loading">در حال بارگذاری...</div>
+} @else {
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          @if (sortMode()) {
+            <th></th>
+          }
+          <th>آیکون</th>
+          <th>عنوان</th>
+          <th>شناسه</th>
+          <th>رنگ</th>
+          <th>ترتیب</th>
+          <th>وضعیت</th>
+          @if (!sortMode()) {
+            <th>عملیات</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (cat of categories(); track cat.id; let i = $index) {
+          <tr
+            [class.dragging]="dragIndex() === i"
+            [draggable]="sortMode()"
+            (dragstart)="onDragStart(i)"
+            (dragover)="onDragOver($event)"
+            (drop)="onDrop(i)"
+          >
+            @if (sortMode()) {
+              <td><app-drag-handle /></td>
+            }
+            <td>
+              <img class="icon-thumb" [src]="cat.iconUrl" [alt]="cat.title | localized" />
+            </td>
+            <td>
+              <strong>{{ cat.title | localized }}</strong>
+              <small class="en-title">{{ cat.title.en }}</small>
+            </td>
+            <td><code>{{ cat.slug }}</code></td>
+            <td>
+              <span class="color-swatch" [style.background]="cat.color"></span>
+              {{ cat.color }}
+            </td>
+            <td>{{ i + 1 }}</td>
+            <td><app-status-badge [published]="cat.published" /></td>
+            @if (!sortMode()) {
+              <td>
+                <div class="row-actions">
+                  <a [routerLink]="['/categories', cat.id, 'edit']" class="btn btn--ghost btn--sm">ویرایش</a>
+                  <button
+                    type="button"
+                    class="btn btn--sm"
+                    [class.btn--success]="!cat.published"
+                    [class.btn--warning]="cat.published"
+                    (click)="togglePublish(cat)"
+                  >
+                    {{ cat.published ? 'لغو انتشار' : 'انتشار' }}
+                  </button>
+                  <button type="button" class="btn btn--danger btn--sm" (click)="deleteCategory(cat)">
+                    حذف
+                  </button>
+                </div>
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td [attr.colspan]="sortMode() ? 7 : 7" class="empty">دسته‌بندی‌ای وجود ندارد</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

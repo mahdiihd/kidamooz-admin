@@ -1,0 +1,128 @@
+<app-page-header title="داشبورد" subtitle="نمای کلی محتوای کیداموز" />
+
+@if (loading()) {
+  <div class="loading">در حال بارگذاری...</div>
+} @else if (stats(); as s) {
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-icon">📖</span>
+      <div>
+        <span class="stat-value">{{ s.totalStories }}</span>
+        <span class="stat-label">کل قصه‌ها</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-icon">✅</span>
+      <div>
+        <span class="stat-value">{{ s.publishedStories }}</span>
+        <span class="stat-label">منتشر شده</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-icon">📝</span>
+      <div>
+        <span class="stat-value">{{ s.draftStories }}</span>
+        <span class="stat-label">پیش‌نویس</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-icon">⭐</span>
+      <div>
+        <span class="stat-value">{{ s.featuredStories }}</span>
+        <span class="stat-label">قصه ویژه</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <span class="stat-icon">🗂️</span>
+      <div>
+        <span class="stat-value">{{ s.publishedCategories }}/{{ s.totalCategories }}</span>
+        <span class="stat-label">دسته فعال</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card--views">
+      <span class="stat-icon">👁️</span>
+      <div>
+        <span class="stat-value">{{ s.views.total | number }}</span>
+        <span class="stat-label">کل بازدیدها</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card--views">
+      <span class="stat-icon">📈</span>
+      <div>
+        <span class="stat-value">{{ s.views.today | number }}</span>
+        <span class="stat-label">بازدید امروز</span>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card--views">
+      <span class="stat-icon">📅</span>
+      <div>
+        <span class="stat-value">{{ s.views.thisWeek | number }}</span>
+        <span class="stat-label">بازدید این هفته</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="info-card-header">
+        <h3>نسخه کاتالوگ</h3>
+        <button
+          type="button"
+          class="btn btn--secondary btn--sm"
+          [disabled]="rebuilding()"
+          (click)="rebuildCatalog()"
+        >
+          {{ rebuilding() ? '...' : 'بازسازی' }}
+        </button>
+      </div>
+      <p class="version">{{ s.catalogVersion.version }}</p>
+      <small>آخرین به‌روزرسانی: {{ s.catalogVersion.updatedAt | jalaliDate }}</small>
+    </div>
+
+    <div class="info-card">
+      <h3>آخرین انتشار</h3>
+      @if (s.lastPublishedAt) {
+        <p>{{ s.lastPublishedAt | jalaliDate }}</p>
+      } @else {
+        <p class="muted">هنوز قصه‌ای منتشر نشده</p>
+      }
+    </div>
+  </div>
+
+  <div class="panel-grid">
+    <div class="panel">
+      <div class="panel-header">
+        <h3>آخرین فعالیت‌ها</h3>
+        <a routerLink="/audit-log" class="btn btn--ghost btn--sm">مشاهده همه</a>
+      </div>
+      <ul class="activity-list">
+        @for (log of recentLogs(); track log.id) {
+          <li>
+            <span class="activity-action">{{ log.action | auditAction }}</span>
+            <span class="activity-title">{{ log.entityTitle }}</span>
+            <time>{{ log.timestamp | jalaliDate }}</time>
+          </li>
+        } @empty {
+          <li class="muted">فعالیتی ثبت نشده</li>
+        }
+      </ul>
+    </div>
+
+    <div class="panel">
+      <h3>دسترسی سریع</h3>
+      <div class="actions-row">
+        <a routerLink="/stories/new" class="btn btn--primary">قصه جدید</a>
+        <a routerLink="/categories/new" class="btn btn--secondary">دسته جدید</a>
+        <a routerLink="/stories" class="btn btn--ghost">مدیریت قصه‌ها</a>
+        <a routerLink="/stories" [queryParams]="{ featured: 'true' }" class="btn btn--ghost">قصه‌های ویژه</a>
+      </div>
+    </div>
+  </div>
+}

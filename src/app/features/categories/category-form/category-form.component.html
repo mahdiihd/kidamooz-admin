@@ -1,0 +1,56 @@
+<app-page-header
+  [title]="isEdit() ? 'ویرایش دسته‌بندی' : 'دسته‌بندی جدید'"
+  [subtitle]="isEdit() ? 'ویرایش اطلاعات دسته' : 'ایجاد دسته جدید برای قصه‌ها'"
+>
+  <a routerLink="/categories" class="btn btn--ghost">بازگشت</a>
+</app-page-header>
+
+<form [formGroup]="form" (ngSubmit)="submit()" class="form-card">
+  <app-localized-input formControlName="title" label="عنوان" />
+
+  <div class="form-row">
+    <div class="field">
+      <label for="slug">شناسه (slug)</label>
+      <input id="slug" type="text" formControlName="slug" placeholder="forest" dir="ltr" />
+      <small>فقط حروف کوچک انگلیسی، اعداد و خط تیره</small>
+    </div>
+
+    <div class="field">
+      <label for="color">رنگ</label>
+      <div class="color-input">
+        <input id="color" type="color" formControlName="color" />
+        <input type="text" formControlName="color" dir="ltr" />
+      </div>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="field">
+      <label for="sortOrder">ترتیب نمایش</label>
+      <input id="sortOrder" type="number" formControlName="sortOrder" min="0" />
+    </div>
+
+    <div class="field field--checkbox">
+      <label>
+        <input type="checkbox" formControlName="published" />
+        منتشر شود
+      </label>
+    </div>
+  </div>
+
+  <app-file-upload
+    #iconUpload
+    label="آیکون دسته"
+    mediaType="icon"
+    accept="image/webp,image/jpeg,image/png"
+    hint="webp, jpg, png — حداکثر ۲ مگابایت"
+    (urlChange)="onIconUrlChange($event)"
+  />
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn--primary" [disabled]="saving()">
+      {{ saving() ? 'در حال ذخیره...' : 'ذخیره' }}
+    </button>
+    <a routerLink="/categories" class="btn btn--ghost">انصراف</a>
+  </div>
+</form>

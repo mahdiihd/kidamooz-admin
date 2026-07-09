@@ -1,0 +1,33 @@
+<aside class="sidebar">
+  <div class="brand">
+    <span class="brand-icon">🌙</span>
+    <div>
+      <strong>کیداموز</strong>
+      <small>پنل مدیریت</small>
+    </div>
+  </div>
+
+  <nav class="nav">
+    @for (item of navItems; track item.path) {
+      <a
+        class="nav-item"
+        [routerLink]="item.path"
+        routerLinkActive="nav-item--active"
+      >
+        <span class="nav-icon">{{ item.icon }}</span>
+        {{ item.label }}
+      </a>
+    }
+  </nav>
+
+  <button type="button" class="logout-btn" (click)="logout()">
+    <span>🚪</span>
+    خروج
+  </button>
+</aside>
+
+<main class="main">
+  <router-outlet />
+</main>
+
+<app-toast-container />

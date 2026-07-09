@@ -1,0 +1,65 @@
+.filter-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+
+  select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.875rem;
+    background: var(--surface);
+    min-width: 180px;
+  }
+}
+
+.nowrap {
+  white-space: nowrap;
+  font-size: 0.8125rem;
+}
+
+.action-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+
+  &--publish {
+    background: #e8f8ef;
+    color: #1a7f4b;
+  }
+
+  &--unpublish,
+  &--delete {
+    background: #ffebee;
+    color: #c62828;
+  }
+
+  &--create {
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+
+  &--update,
+  &--reorder {
+    background: #fff3e0;
+    color: #e65100;
+  }
+}
+
+td small {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.125rem;
+}
+
+.empty {
+  text-align: center;
+  padding: 2rem !important;
+  color: var(--text-muted);
+}

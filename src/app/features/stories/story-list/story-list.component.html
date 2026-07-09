@@ -1,0 +1,212 @@
+<app-page-header title="قصه‌ها" [subtitle]="'مجموع ' + total() + ' قصه'">
+  @if (sortMode()) {
+    <button type="button" class="btn btn--primary" [disabled]="savingOrder()" (click)="saveOrder()">
+      {{ savingOrder() ? 'در حال ذخیره...' : 'ذخیره ترتیب' }}
+    </button>
+    <button type="button" class="btn btn--ghost" (click)="toggleSortMode()">انصراف</button>
+  } @else {
+    <button type="button" class="btn btn--secondary" (click)="toggleSortMode()">مرتب‌سازی</button>
+    <a routerLink="/stories/new" class="btn btn--primary">قصه جدید</a>
+  }
+</app-page-header>
+
+<form [formGroup]="filterForm" class="filter-bar">
+  <select formControlName="categoryId">
+    <option value="">همه دسته‌ها</option>
+    @for (cat of categories(); track cat.id) {
+      <option [value]="cat.id">{{ cat.title | localized }}</option>
+    }
+  </select>
+
+  <input type="number" formControlName="ageMin" placeholder="حداقل سن" min="0" />
+  <input type="number" formControlName="ageMax" placeholder="حداکثر سن" min="0" />
+
+  <select formControlName="featured">
+    <option value="">همه / ویژه</option>
+    <option value="true">فقط ویژه</option>
+    <option value="false">غیر ویژه</option>
+  </select>
+
+  <select formControlName="published">
+    <option value="">همه وضعیت‌ها</option>
+    <option value="true">منتشر شده</option>
+    <option value="false">پیش‌نویس</option>
+  </select>
+
+  <select formControlName="visibility">
+    <option value="">همه دسترسی‌ها</option>
+    <option value="public">عمومی</option>
+    <option value="restricted">محدود</option>
+  </select>
+
+  <button type="button" class="btn btn--secondary btn--sm" (click)="applyFilter()">فیلتر</button>
+  <button type="button" class="btn btn--ghost btn--sm" (click)="resetFilter()">پاک کردن</button>
+
+  <div class="view-toggle">
+    <button
+      type="button"
+      class="btn btn--sm"
+      [class.btn--primary]="viewMode() === 'grid'"
+      [class.btn--ghost]="viewMode() !== 'grid'"
+      (click)="setViewMode('grid')"
+    >
+      کارت
+    </button>
+    <button
+      type="button"
+      class="btn btn--sm"
+      [class.btn--primary]="viewMode() === 'list'"
+      [class.btn--ghost]="viewMode() !== 'list'"
+      (click)="setViewMode('list')"
+    >
+      لیست
+    </button>
+  </div>
+</form>
+
+@if (sortMode()) {
+  <p class="sort-hint">قصه‌ها را بکشید و رها کنید، سپس ترتیب را ذخیره کنید.</p>
+}
+
+@if (loading()) {
+  <div class="loading">در حال بارگذاری...</div>
+} @else if (viewMode() === 'grid') {
+  <div class="stories-grid">
+    @for (story of stories(); track story.id) {
+      <article class="story-card">
+        <div class="story-cover">
+          <img [src]="story.coverUrl" [alt]="story.title | localized" />
+          @if (story.featured) {
+            <span class="featured-badge">⭐ ویژه</span>
+          }
+        </div>
+        <div class="story-body">
+          <div class="story-meta">
+            <div class="badges">
+              <app-status-badge [published]="story.published" />
+              <app-visibility-badge [access]="story.access" />
+            </div>
+            <span class="duration">{{ story.durationSeconds | duration }}</span>
+          </div>
+          <h3>{{ story.title | localized }}</h3>
+          <p class="category">{{ getCategoryTitle(story.categoryId) }}</p>
+          <p class="audience">{{ story.access | storyAudienceSummary: segments() : users() }}</p>
+          <p class="age">سن {{ story.ageMin }}–{{ story.ageMax }} سال</p>
+          <div class="story-actions">
+            <a [routerLink]="['/stories', story.id, 'edit']" class="btn btn--ghost btn--sm">ویرایش</a>
+            <a
+              [href]="getMobilePreviewUrl(story.id)"
+              class="btn btn--ghost btn--sm"
+              target="_blank"
+              rel="noopener"
+              title="پیش‌نمایش در اپ"
+            >
+              📱
+            </a>
+            <button type="button" class="btn btn--ghost btn--sm" (click)="toggleFeatured(story)">
+              {{ story.featured ? '★' : '☆' }}
+            </button>
+            <button
+              type="button"
+              class="btn btn--sm"
+              [class.btn--success]="!story.published"
+              [class.btn--warning]="story.published"
+              (click)="togglePublish(story)"
+            >
+              {{ story.published ? 'لغو' : 'انتشار' }}
+            </button>
+            <button type="button" class="btn btn--danger btn--sm" (click)="deleteStory(story)">حذف</button>
+          </div>
+        </div>
+      </article>
+    } @empty {
+      <div class="empty">قصه‌ای یافت نشد</div>
+    }
+  </div>
+} @else {
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          @if (sortMode()) {
+            <th></th>
+          }
+          <th>کاور</th>
+          <th>عنوان</th>
+          <th>دسته</th>
+          <th>دسترسی</th>
+          <th>سن</th>
+          <th>مدت</th>
+          <th>وضعیت</th>
+          @if (!sortMode()) {
+            <th>عملیات</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (story of stories(); track story.id; let i = $index) {
+          <tr
+            [class.dragging]="dragIndex() === i"
+            [draggable]="sortMode()"
+            (dragstart)="onDragStart(i)"
+            (dragover)="onDragOver($event)"
+            (drop)="onDrop(i)"
+          >
+            @if (sortMode()) {
+              <td><app-drag-handle /></td>
+            }
+            <td>
+              <img class="list-thumb" [src]="story.coverUrl" [alt]="story.title | localized" />
+            </td>
+            <td>
+              <strong>{{ story.title | localized }}</strong>
+              @if (story.featured) {
+                <span class="inline-featured">⭐</span>
+              }
+            </td>
+            <td>{{ getCategoryTitle(story.categoryId) }}</td>
+            <td>
+              <app-visibility-badge [access]="story.access" />
+              <small class="audience-cell">{{ story.access | storyAudienceSummary: segments() : users() }}</small>
+            </td>
+            <td>{{ story.ageMin }}–{{ story.ageMax }}</td>
+            <td>{{ story.durationSeconds | duration }}</td>
+            <td><app-status-badge [published]="story.published" /></td>
+            @if (!sortMode()) {
+              <td>
+                <div class="row-actions">
+                  <a [routerLink]="['/stories', story.id, 'edit']" class="btn btn--ghost btn--sm">ویرایش</a>
+                  <a
+                    [href]="getMobilePreviewUrl(story.id)"
+                    class="btn btn--ghost btn--sm"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    📱
+                  </a>
+                  <button type="button" class="btn btn--ghost btn--sm" (click)="toggleFeatured(story)">
+                    {{ story.featured ? '★' : '☆' }}
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn--sm"
+                    [class.btn--success]="!story.published"
+                    [class.btn--warning]="story.published"
+                    (click)="togglePublish(story)"
+                  >
+                    {{ story.published ? 'لغو' : 'انتشار' }}
+                  </button>
+                  <button type="button" class="btn btn--danger btn--sm" (click)="deleteStory(story)">حذف</button>
+                </div>
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="empty">قصه‌ای یافت نشد</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

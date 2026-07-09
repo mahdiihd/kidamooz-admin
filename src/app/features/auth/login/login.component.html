@@ -1,0 +1,33 @@
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-header">
+      <span class="logo">🌙</span>
+      <h1>کیداموز</h1>
+      <p>ورود به پنل مدیریت محتوا</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="field">
+        <label for="email">ایمیل</label>
+        <input id="email" type="email" formControlName="email" placeholder="admin@kidamooz.com" />
+      </div>
+
+      <div class="field">
+        <label for="password">رمز عبور</label>
+        <input id="password" type="password" formControlName="password" placeholder="••••••••" />
+      </div>
+
+      @if (error()) {
+        <div class="alert alert--error">{{ error() }}</div>
+      }
+
+      <button type="submit" class="btn btn--primary btn--block" [disabled]="loading()">
+        {{ loading() ? 'در حال ورود...' : 'ورود' }}
+      </button>
+    </form>
+
+    @if (useMock) {
+      <p class="mock-hint">حالت Mock فعال — admin@kidamooz.com / admin123</p>
+    }
+  </div>
+</div>
