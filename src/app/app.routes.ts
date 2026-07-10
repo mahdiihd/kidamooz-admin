@@ -63,6 +63,16 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'users',
+        loadComponent: () =>
+          import('./features/users/user-list/user-list.component').then((m) => m.UserListComponent),
+      },
+      {
+        path: 'users/new',
+        loadComponent: () =>
+          import('./features/users/user-form/user-form.component').then((m) => m.UserFormComponent),
+      },
+      {
         path: 'audit-log',
         loadComponent: () =>
           import('./features/audit-log/audit-log.component').then((m) => m.AuditLogComponent),

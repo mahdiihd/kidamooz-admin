@@ -1,0 +1,55 @@
+<app-page-header title="کاربر جدید" subtitle="افزودن ادمین یا ویرایشگر به پنل">
+  <a routerLink="/users" class="btn btn--ghost">بازگشت</a>
+</app-page-header>
+
+<form [formGroup]="form" (ngSubmit)="submit()" class="form-card">
+  @if (error()) {
+    <div class="alert alert--error">{{ error() }}</div>
+  }
+
+  <div class="field">
+    <label for="displayName">نام نمایشی</label>
+    <input id="displayName" type="text" formControlName="displayName" placeholder="ویرایشگر" />
+  </div>
+
+  <div class="field">
+    <label for="email">ایمیل</label>
+    <input
+      id="email"
+      type="email"
+      formControlName="email"
+      placeholder="editor@kidamooz.com"
+      dir="ltr"
+      autocomplete="off"
+    />
+  </div>
+
+  <div class="form-row">
+    <div class="field">
+      <label for="password">رمز عبور</label>
+      <input
+        id="password"
+        type="password"
+        formControlName="password"
+        dir="ltr"
+        autocomplete="new-password"
+      />
+      <small>حداقل ۶ کاراکتر</small>
+    </div>
+
+    <div class="field">
+      <label for="role">نقش</label>
+      <select id="role" formControlName="role">
+        <option value="editor">ویرایشگر</option>
+        <option value="admin">ادمین</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn--primary" [disabled]="saving()">
+      {{ saving() ? 'در حال ذخیره...' : 'ذخیره' }}
+    </button>
+    <a routerLink="/users" class="btn btn--ghost">انصراف</a>
+  </div>
+</form>

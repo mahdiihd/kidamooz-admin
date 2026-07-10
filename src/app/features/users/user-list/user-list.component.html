@@ -1,0 +1,84 @@
+<app-page-header title="کاربران ادمین" subtitle="مدیریت دسترسی پنل ادمین">
+  <a routerLink="/users/new" class="btn btn--primary">کاربر جدید</a>
+</app-page-header>
+
+@if (loading()) {
+  <div class="loading">در حال بارگذاری...</div>
+} @else {
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>نام</th>
+          <th>ایمیل</th>
+          <th>نقش</th>
+          <th>وضعیت</th>
+          <th>تاریخ ایجاد</th>
+          <th>عملیات</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (user of users(); track user.id) {
+          <tr>
+            <td>
+              <strong>{{ user.displayName }}</strong>
+            </td>
+            <td dir="ltr">{{ user.email }}</td>
+            <td>
+              <span class="role-badge" [class.role-badge--admin]="user.role === 'admin'">
+                {{ user.role | adminRole }}
+              </span>
+            </td>
+            <td>
+              <span class="status-dot" [class.status-dot--active]="user.isActive">
+                {{ user.isActive ? 'فعال' : 'غیرفعال' }}
+              </span>
+            </td>
+            <td>{{ user.createdAt | jalaliDate }}</td>
+            <td>
+              <div class="row-actions">
+                <button type="button" class="btn btn--ghost btn--sm" (click)="openPasswordDialog(user)">
+                  تغییر رمز
+                </button>
+                <button type="button" class="btn btn--danger btn--sm" (click)="deleteUser(user)">
+                  حذف
+                </button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty">کاربری وجود ندارد</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (passwordUser(); as user) {
+  <div class="dialog-backdrop" (click)="closePasswordDialog()">
+    <div class="dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+      <h2>تغییر رمز عبور</h2>
+      <p>رمز جدید برای «{{ user.displayName }}»</p>
+      <form [formGroup]="passwordForm" (ngSubmit)="submitPassword()">
+        <div class="field">
+          <label for="newPassword">رمز جدید</label>
+          <input
+            id="newPassword"
+            type="password"
+            formControlName="password"
+            autocomplete="new-password"
+            dir="ltr"
+          />
+        </div>
+        <div class="dialog-actions">
+          <button type="submit" class="btn btn--primary" [disabled]="resetting()">
+            {{ resetting() ? 'در حال ذخیره...' : 'ذخیره' }}
+          </button>
+          <button type="button" class="btn btn--ghost" (click)="closePasswordDialog()">انصراف</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
