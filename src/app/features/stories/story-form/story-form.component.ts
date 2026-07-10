@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { switchMap } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 import { StoryService } from '../../../core/services/story.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -42,6 +42,7 @@ export class StoryFormComponent implements OnInit {
 
   private readonly coverUpload = viewChild<FileUploadComponent>('coverUpload');
   private readonly audioUpload = viewChild<FileUploadComponent>('audioUpload');
+  private readonly chaptersEditor = viewChild<ChaptersEditorComponent>('chaptersEditor');
 
   readonly isEdit = signal(false);
   readonly saving = signal(false);
@@ -91,7 +92,25 @@ export class StoryFormComponent implements OnInit {
   }
 
   submit(): void {
-    if (this.form.invalid) {
+    const cover = this.coverUpload();
+    const audio = this.audioUpload();
+    const chaptersUi = this.chaptersEditor();
+
+    if (!cover?.hasMedia()) {
+      this.toast.error('کاور الزامی است');
+      return;
+    }
+    if (!audio?.hasMedia()) {
+      this.toast.error('فایل صوتی الزامی است');
+      return;
+    }
+    if (chaptersUi && !chaptersUi.validateChapterMedia()) {
+      this.toast.error('تصویر همه فصل‌ها الزامی است');
+      return;
+    }
+
+    if (this.form.controls.title.invalid || this.form.controls.description.invalid
+      || this.form.controls.categoryId.invalid || this.form.controls.durationSeconds.invalid) {
       this.form.markAllAsTouched();
       return;
     }
@@ -111,29 +130,31 @@ export class StoryFormComponent implements OnInit {
       return;
     }
 
+    if (cover.remoteUrl()) {
+      raw.coverUrl = cover.remoteUrl()!;
+    }
+    if (audio.remoteUrl()) {
+      raw.audioUrl = audio.remoteUrl()!;
+    }
+
     this.saving.set(true);
     const id = this.storyId();
     const { chapters, ...payload } = raw;
+    const media = {
+      cover: cover.pendingFile(),
+      audio: audio.pendingFile(),
+      chapterImages: chaptersUi?.chapterImageFiles() ?? [],
+    };
 
     const save$ = id
-      ? this.storyService.update(id, payload).pipe(
-          switchMap(() => this.storyService.updateChapters(id, chapters)),
-        )
-      : this.storyService.create(payload);
+      ? this.storyService.update(id, payload, chapters, media)
+      : this.storyService.create(payload, chapters, media);
 
     save$.subscribe({
-      next: (result) => {
-        if (!id && chapters.length > 0) {
-          this.storyService.updateChapters(result.id, chapters).subscribe({
-            next: () => this.finishSave(),
-          });
-          return;
-        }
-        this.finishSave();
-      },
-      error: () => {
+      next: () => this.finishSave(),
+      error: (err: HttpErrorResponse) => {
         this.saving.set(false);
-        this.toast.error('خطا در ذخیره قصه');
+        this.toast.error(this.resolveError(err));
       },
     });
   }
@@ -166,5 +187,19 @@ export class StoryFormComponent implements OnInit {
         this.audioUpload()?.setInitialUrl(story.audioUrl);
       },
     });
+  }
+
+  private resolveError(err: HttpErrorResponse): string {
+    const message = err.error?.message;
+    if (typeof message === 'string' && message.length > 0) {
+      return message;
+    }
+    if (err.status === 422) {
+      return 'آپلود فایل ناموفق بود؛ رکورد ذخیره نشد';
+    }
+    if (err.status === 409) {
+      return 'خطا در ذخیره قصه (تداخل داده)';
+    }
+    return 'خطا در ذخیره قصه';
   }
 }

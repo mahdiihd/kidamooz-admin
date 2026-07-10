@@ -1,4 +1,4 @@
-import { Component, forwardRef, inject, input, OnDestroy } from '@angular/core';
+import { Component, forwardRef, inject, input, OnDestroy, viewChildren } from '@angular/core';
 import {
   ControlValueAccessor,
   FormArray,
@@ -31,6 +31,7 @@ import { DurationPipe } from '../../pipes/duration.pipe';
 export class ChaptersEditorComponent implements ControlValueAccessor, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private sub?: Subscription;
+  private readonly chapterUploads = viewChildren(FileUploadComponent);
 
   readonly storyDuration = input(0);
 
@@ -87,6 +88,21 @@ export class ChaptersEditorComponent implements ControlValueAccessor, OnDestroy 
   onImageChange(index: number, url: string): void {
     this.chapters.at(index).patchValue({ imageUrl: url }, { emitEvent: false });
     this.emitChange();
+  }
+
+  chapterImageFiles(): Array<File | null> {
+    return this.chapterUploads().map((upload) => upload.pendingFile());
+  }
+
+  validateChapterMedia(): boolean {
+    const uploads = this.chapterUploads();
+    for (let i = 0; i < this.chapters.length; i++) {
+      const upload = uploads[i];
+      if (!upload?.hasMedia()) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private createChapterGroup(chapter: StoryChapter): FormGroup {

@@ -13,6 +13,12 @@ import { MockStore, StoryQueryFilters } from './mock-store.service';
 
 export type StoryFilters = StoryQueryFilters;
 
+export interface StoryMediaFiles {
+  cover?: File | null;
+  audio?: File | null;
+  chapterImages?: Array<File | null | undefined>;
+}
+
 @Injectable({ providedIn: 'root' })
 export class StoryService {
   private readonly http = inject(HttpClient);
@@ -48,18 +54,33 @@ export class StoryService {
     return this.http.get<StoryDetail>(`${environment.apiBaseUrl}/stories/${id}`);
   }
 
-  create(payload: StoryPayload): Observable<StoryDetail> {
+  create(
+    payload: StoryPayload,
+    chapters: StoryChapter[],
+    media: StoryMediaFiles = {},
+  ): Observable<StoryDetail> {
     if (environment.useMock) {
       return of(this.mockStore.createStory(payload)).pipe(delay(400));
     }
-    return this.http.post<StoryDetail>(`${environment.apiBaseUrl}/stories`, payload);
+    return this.http.post<StoryDetail>(
+      `${environment.apiBaseUrl}/stories`,
+      this.toFormData(payload, chapters, media),
+    );
   }
 
-  update(id: string, payload: StoryPayload): Observable<StoryDetail> {
+  update(
+    id: string,
+    payload: StoryPayload,
+    chapters: StoryChapter[],
+    media: StoryMediaFiles = {},
+  ): Observable<StoryDetail> {
     if (environment.useMock) {
       return of(this.mockStore.updateStory(id, payload)).pipe(delay(400));
     }
-    return this.http.put<StoryDetail>(`${environment.apiBaseUrl}/stories/${id}`, payload);
+    return this.http.put<StoryDetail>(
+      `${environment.apiBaseUrl}/stories/${id}`,
+      this.toFormData(payload, chapters, media),
+    );
   }
 
   updateChapters(id: string, chapters: StoryChapter[]): Observable<StoryDetail> {
@@ -98,5 +119,58 @@ export class StoryService {
       return of(this.mockStore.reorderStories(ids)).pipe(delay(300));
     }
     return this.http.put<Story[]>(`${environment.apiBaseUrl}/stories/reorder`, { ids });
+  }
+
+  private toFormData(
+    payload: StoryPayload,
+    chapters: StoryChapter[],
+    media: StoryMediaFiles,
+  ): FormData {
+    const formData = new FormData();
+    if (payload.id) {
+      formData.append('id', payload.id);
+    }
+    formData.append('titleFa', payload.title.fa);
+    formData.append('titleEn', payload.title.en);
+    formData.append('descriptionFa', payload.description.fa);
+    formData.append('descriptionEn', payload.description.en);
+    formData.append('durationSeconds', String(payload.durationSeconds));
+    formData.append('ageMin', String(payload.ageMin));
+    formData.append('ageMax', String(payload.ageMax));
+    formData.append('categoryId', payload.categoryId);
+    formData.append('featured', String(payload.featured));
+    formData.append('sortOrder', String(payload.sortOrder));
+    formData.append('published', String(payload.published));
+    formData.append('accessJson', JSON.stringify(payload.access));
+    formData.append(
+      'chaptersJson',
+      JSON.stringify(
+        chapters.map((chapter) => ({
+          title: chapter.title,
+          startSeconds: chapter.startSeconds,
+          imageUrl: chapter.imageUrl?.startsWith('blob:') ? '' : chapter.imageUrl,
+        })),
+      ),
+    );
+
+    if (payload.coverUrl && !payload.coverUrl.startsWith('blob:')) {
+      formData.append('coverUrl', payload.coverUrl);
+    }
+    if (payload.audioUrl && !payload.audioUrl.startsWith('blob:')) {
+      formData.append('audioUrl', payload.audioUrl);
+    }
+    if (media.cover) {
+      formData.append('cover', media.cover, media.cover.name);
+    }
+    if (media.audio) {
+      formData.append('audio', media.audio, media.audio.name);
+    }
+    media.chapterImages?.forEach((file, index) => {
+      if (file) {
+        formData.append(`chapterImage_${index}`, file, file.name);
+      }
+    });
+
+    return formData;
   }
 }

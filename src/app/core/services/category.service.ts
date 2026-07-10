@@ -28,18 +28,24 @@ export class CategoryService {
     return this.http.get<Category>(`${environment.apiBaseUrl}/categories/${id}`);
   }
 
-  create(payload: CategoryPayload): Observable<Category> {
+  create(payload: CategoryPayload, icon?: File | null): Observable<Category> {
     if (environment.useMock) {
       return of(this.mockStore.createCategory(payload)).pipe(delay(400));
     }
-    return this.http.post<Category>(`${environment.apiBaseUrl}/categories`, payload);
+    return this.http.post<Category>(
+      `${environment.apiBaseUrl}/categories`,
+      this.toFormData(payload, icon),
+    );
   }
 
-  update(id: string, payload: CategoryPayload): Observable<Category> {
+  update(id: string, payload: CategoryPayload, icon?: File | null): Observable<Category> {
     if (environment.useMock) {
       return of(this.mockStore.updateCategory(id, payload)).pipe(delay(400));
     }
-    return this.http.put<Category>(`${environment.apiBaseUrl}/categories/${id}`, payload);
+    return this.http.put<Category>(
+      `${environment.apiBaseUrl}/categories/${id}`,
+      this.toFormData(payload, icon),
+    );
   }
 
   delete(id: string): Observable<void> {
@@ -64,5 +70,25 @@ export class CategoryService {
       return of(this.mockStore.reorderCategories(ids)).pipe(delay(300));
     }
     return this.http.put<Category[]>(`${environment.apiBaseUrl}/categories/reorder`, { ids });
+  }
+
+  private toFormData(payload: CategoryPayload, icon?: File | null): FormData {
+    const formData = new FormData();
+    if (payload.id) {
+      formData.append('id', payload.id);
+    }
+    formData.append('titleFa', payload.title.fa);
+    formData.append('titleEn', payload.title.en);
+    formData.append('slug', payload.slug);
+    formData.append('color', payload.color);
+    formData.append('sortOrder', String(payload.sortOrder));
+    formData.append('published', String(payload.published));
+    if (payload.iconUrl && !payload.iconUrl.startsWith('blob:')) {
+      formData.append('iconUrl', payload.iconUrl);
+    }
+    if (icon) {
+      formData.append('icon', icon, icon.name);
+    }
+    return formData;
   }
 }

@@ -1,7 +1,9 @@
 import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CategoryService } from '../../../core/services/category.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
 import { LocalizedInputComponent } from '../../../shared/components/localized-input/localized-input.component';
 import { FileUploadComponent } from '../../../shared/components/file-upload/file-upload.component';
@@ -22,6 +24,7 @@ import { FileUploadComponent } from '../../../shared/components/file-upload/file
 export class CategoryFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly categoryService = inject(CategoryService);
+  private readonly toast = inject(ToastService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -54,23 +57,44 @@ export class CategoryFormComponent implements OnInit {
   }
 
   submit(): void {
-    if (this.form.invalid) {
+    const icon = this.iconUpload();
+    if (!icon?.hasMedia()) {
+      this.form.controls.iconUrl.markAsTouched();
+      this.toast.error('آیکون الزامی است');
+      return;
+    }
+
+    if (this.form.invalid && !icon.pendingFile()) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    if (this.form.controls.title.invalid || this.form.controls.slug.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
     this.saving.set(true);
     const payload = this.form.getRawValue();
+    if (icon.remoteUrl()) {
+      payload.iconUrl = icon.remoteUrl()!;
+    }
     const id = this.categoryId();
+    const file = icon.pendingFile();
 
     const request$ = id
-      ? this.categoryService.update(id, payload)
-      : this.categoryService.create(payload);
+      ? this.categoryService.update(id, payload, file)
+      : this.categoryService.create(payload, file);
 
     request$.subscribe({
-      next: () => this.router.navigate(['/categories']),
-      error: () => this.saving.set(false),
-      complete: () => this.saving.set(false),
+      next: () => {
+        this.toast.success('دسته‌بندی ذخیره شد');
+        this.router.navigate(['/categories']);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.saving.set(false);
+        this.toast.error(this.resolveError(err));
+      },
     });
   }
 
@@ -88,5 +112,19 @@ export class CategoryFormComponent implements OnInit {
         this.iconUpload()?.setInitialUrl(category.iconUrl);
       },
     });
+  }
+
+  private resolveError(err: HttpErrorResponse): string {
+    const message = err.error?.message;
+    if (typeof message === 'string' && message.length > 0) {
+      return message;
+    }
+    if (err.status === 422) {
+      return 'آپلود فایل ناموفق بود؛ رکورد ذخیره نشد';
+    }
+    if (err.status === 409) {
+      return 'اسلاگ یا شناسه تکراری است';
+    }
+    return 'خطا در ذخیره دسته‌بندی';
   }
 }

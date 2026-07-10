@@ -1,5 +1,5 @@
-import { Component, effect, inject, input, output, signal } from '@angular/core';
-import { MediaService, MediaType } from '../../../core/services/media.service';
+import { Component, effect, input, output, signal } from '@angular/core';
+import { MediaType } from '../../../core/services/media.service';
 
 @Component({
   selector: 'app-file-upload',
@@ -20,19 +20,10 @@ import { MediaService, MediaType } from '../../../core/services/media.service';
           <button type="button" class="remove-btn" (click)="clearPreview()">حذف</button>
         </div>
       } @else {
-        <label class="dropzone" [class.dropzone--loading]="uploading()">
-          <input
-            type="file"
-            [accept]="accept()"
-            (change)="onFileSelected($event)"
-            [disabled]="uploading()"
-          />
-          @if (uploading()) {
-            <span class="dropzone-text">در حال آپلود...</span>
-          } @else {
-            <span class="dropzone-icon">📁</span>
-            <span class="dropzone-text">{{ hint() }}</span>
-          }
+        <label class="dropzone">
+          <input type="file" [accept]="accept()" (change)="onFileSelected($event)" />
+          <span class="dropzone-icon">📁</span>
+          <span class="dropzone-text">{{ hint() }}</span>
         </label>
       }
 
@@ -71,11 +62,6 @@ import { MediaService, MediaType } from '../../../core/services/media.service';
       input {
         display: none;
       }
-    }
-
-    .dropzone--loading {
-      opacity: 0.7;
-      pointer-events: none;
     }
 
     .dropzone-icon {
@@ -134,8 +120,6 @@ import { MediaService, MediaType } from '../../../core/services/media.service';
   `,
 })
 export class FileUploadComponent {
-  private readonly mediaService = inject(MediaService);
-
   readonly label = input<string>();
   readonly mediaType = input<MediaType>('cover');
   readonly accept = input('image/webp,image/jpeg,image/png');
@@ -144,22 +128,46 @@ export class FileUploadComponent {
   readonly initialUrl = input('');
 
   readonly urlChange = output<string>();
+  readonly fileChange = output<File | null>();
 
   readonly previewUrl = signal<string | null>(null);
-  readonly uploading = signal(false);
   readonly error = signal<string | null>(null);
+
+  private readonly pendingFileSignal = signal<File | null>(null);
+  private readonly remoteUrlSignal = signal<string | null>(null);
+  private objectUrl: string | null = null;
 
   constructor() {
     effect(() => {
       const url = this.initialUrl();
-      if (url) {
-        this.previewUrl.set(url);
+      if (!url || url.startsWith('blob:') || this.pendingFileSignal()) {
+        return;
       }
+      if (url === this.remoteUrlSignal()) {
+        return;
+      }
+      this.setInitialUrl(url);
     });
   }
 
+  pendingFile(): File | null {
+    return this.pendingFileSignal();
+  }
+
+  remoteUrl(): string | null {
+    return this.remoteUrlSignal();
+  }
+
+  hasMedia(): boolean {
+    return this.pendingFileSignal() !== null || !!this.remoteUrlSignal();
+  }
+
   setInitialUrl(url: string): void {
+    this.revokeObjectUrl();
+    this.pendingFileSignal.set(null);
+    this.remoteUrlSignal.set(url || null);
     this.previewUrl.set(url || null);
+    this.error.set(null);
   }
 
   onFileSelected(event: Event): void {
@@ -172,29 +180,35 @@ export class FileUploadComponent {
     const maxBytes = this.maxSizeMb() * 1024 * 1024;
     if (file.size > maxBytes) {
       this.error.set(`حجم فایل نباید بیشتر از ${this.maxSizeMb()} مگابایت باشد`);
+      input.value = '';
       return;
     }
 
     this.error.set(null);
-    this.uploading.set(true);
-
-    this.mediaService.uploadLocal(file, this.mediaType()).subscribe({
-      next: (url) => {
-        this.previewUrl.set(url);
-        this.urlChange.emit(url);
-        this.uploading.set(false);
-      },
-      error: () => {
-        this.error.set('آپلود با خطا مواجه شد');
-        this.uploading.set(false);
-      },
-    });
-
+    this.revokeObjectUrl();
+    this.objectUrl = URL.createObjectURL(file);
+    this.pendingFileSignal.set(file);
+    this.remoteUrlSignal.set(null);
+    this.previewUrl.set(this.objectUrl);
+    this.urlChange.emit(this.objectUrl);
+    this.fileChange.emit(file);
     input.value = '';
   }
 
   clearPreview(): void {
+    this.revokeObjectUrl();
+    this.pendingFileSignal.set(null);
+    this.remoteUrlSignal.set(null);
     this.previewUrl.set(null);
+    this.error.set(null);
     this.urlChange.emit('');
+    this.fileChange.emit(null);
+  }
+
+  private revokeObjectUrl(): void {
+    if (this.objectUrl) {
+      URL.revokeObjectURL(this.objectUrl);
+      this.objectUrl = null;
+    }
   }
 }
