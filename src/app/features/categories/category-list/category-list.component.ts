@@ -69,7 +69,6 @@ export class CategoryListComponent implements OnInit {
       },
       error: () => {
         this.savingOrder.set(false);
-        this.toast.error('خطا در ذخیره ترتیب');
       },
     });
   }

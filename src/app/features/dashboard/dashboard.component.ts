@@ -54,7 +54,6 @@ export class DashboardComponent implements OnInit {
       },
       error: () => {
         this.rebuilding.set(false);
-        this.toast.error('خطا در بازسازی نسخه');
       },
     });
   }

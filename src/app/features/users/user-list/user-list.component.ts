@@ -1,7 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { HttpErrorResponse } from '@angular/common/http';
 import { AdminUserService } from '../../../core/services/admin-user.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AdminUser } from '../../../core/models/admin-user.model';
@@ -65,9 +64,8 @@ export class UserListComponent implements OnInit {
           this.passwordUser.set(null);
           this.toast.success('رمز عبور تغییر کرد');
         },
-        error: (err: HttpErrorResponse) => {
+        error: () => {
           this.resetting.set(false);
-          this.toast.error(this.resolveError(err, 'خطا در تغییر رمز'));
         },
       });
   }
@@ -82,9 +80,6 @@ export class UserListComponent implements OnInit {
         this.loadUsers();
         this.toast.success('کاربر حذف شد');
       },
-      error: (err: HttpErrorResponse) => {
-        this.toast.error(this.resolveError(err, 'خطا در حذف کاربر'));
-      },
     });
   }
 
@@ -95,15 +90,9 @@ export class UserListComponent implements OnInit {
         this.users.set(items);
         this.loading.set(false);
       },
-      error: (err: HttpErrorResponse) => {
+      error: () => {
         this.loading.set(false);
-        this.toast.error(this.resolveError(err, 'خطا در بارگذاری کاربران'));
       },
     });
-  }
-
-  private resolveError(err: HttpErrorResponse, fallback: string): string {
-    const message = err.error?.message;
-    return typeof message === 'string' && message.length > 0 ? message : fallback;
   }
 }

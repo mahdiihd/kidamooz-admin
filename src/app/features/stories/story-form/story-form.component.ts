@@ -1,7 +1,6 @@
 import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { HttpErrorResponse } from '@angular/common/http';
 import { StoryService } from '../../../core/services/story.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -152,9 +151,8 @@ export class StoryFormComponent implements OnInit {
 
     save$.subscribe({
       next: () => this.finishSave(),
-      error: (err: HttpErrorResponse) => {
+      error: () => {
         this.saving.set(false);
-        this.toast.error(this.resolveError(err));
       },
     });
   }
@@ -187,19 +185,5 @@ export class StoryFormComponent implements OnInit {
         this.audioUpload()?.setInitialUrl(story.audioUrl);
       },
     });
-  }
-
-  private resolveError(err: HttpErrorResponse): string {
-    const message = err.error?.message;
-    if (typeof message === 'string' && message.length > 0) {
-      return message;
-    }
-    if (err.status === 422) {
-      return 'آپلود فایل ناموفق بود؛ رکورد ذخیره نشد';
-    }
-    if (err.status === 409) {
-      return 'خطا در ذخیره قصه (تداخل داده)';
-    }
-    return 'خطا در ذخیره قصه';
   }
 }

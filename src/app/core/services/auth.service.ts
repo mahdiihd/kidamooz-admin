@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, delay, of, tap, throwError } from 'rxjs';
+import { Observable, catchError, delay, of, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthTokens, LoginRequest } from '../models/auth.model';
 import { MOCK_ADMIN } from '../data/mock-data';
@@ -42,7 +42,13 @@ export class AuthService {
     const refreshToken = localStorage.getItem(REFRESH_KEY) ?? '';
     return this.http
       .post<void>(`${environment.apiBaseUrl}/auth/logout`, { refreshToken })
-      .pipe(tap(() => this.clearTokens()));
+      .pipe(
+        tap(() => this.clearTokens()),
+        catchError(() => {
+          this.clearTokens();
+          return of(undefined);
+        }),
+      );
   }
 
   getAccessToken(): string | null {

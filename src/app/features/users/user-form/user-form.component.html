@@ -3,10 +3,6 @@
 </app-page-header>
 
 <form [formGroup]="form" (ngSubmit)="submit()" class="form-card">
-  @if (error()) {
-    <div class="alert alert--error">{{ error() }}</div>
-  }
-
   <div class="field">
     <label for="displayName">نام نمایشی</label>
     <input id="displayName" type="text" formControlName="displayName" placeholder="ویرایشگر" />

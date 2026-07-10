@@ -1,7 +1,6 @@
 import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { HttpErrorResponse } from '@angular/common/http';
 import { CategoryService } from '../../../core/services/category.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
@@ -91,9 +90,8 @@ export class CategoryFormComponent implements OnInit {
         this.toast.success('دسته‌بندی ذخیره شد');
         this.router.navigate(['/categories']);
       },
-      error: (err: HttpErrorResponse) => {
+      error: () => {
         this.saving.set(false);
-        this.toast.error(this.resolveError(err));
       },
     });
   }
@@ -112,19 +110,5 @@ export class CategoryFormComponent implements OnInit {
         this.iconUpload()?.setInitialUrl(category.iconUrl);
       },
     });
-  }
-
-  private resolveError(err: HttpErrorResponse): string {
-    const message = err.error?.message;
-    if (typeof message === 'string' && message.length > 0) {
-      return message;
-    }
-    if (err.status === 422) {
-      return 'آپلود فایل ناموفق بود؛ رکورد ذخیره نشد';
-    }
-    if (err.status === 409) {
-      return 'اسلاگ یا شناسه تکراری است';
-    }
-    return 'خطا در ذخیره دسته‌بندی';
   }
 }

@@ -141,7 +141,6 @@ export class StoryListComponent implements OnInit {
       },
       error: () => {
         this.savingOrder.set(false);
-        this.toast.error('خطا در ذخیره ترتیب');
       },
     });
   }
