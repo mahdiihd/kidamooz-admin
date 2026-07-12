@@ -1,5 +1,5 @@
 .form-card {
-  max-width: 560px;
+  max-width: 640px;
   padding: 1.5rem;
   background: var(--surface);
   border-radius: var(--radius-md);
@@ -7,16 +7,6 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-
-  @media (max-width: 540px) {
-    grid-template-columns: 1fr;
-  }
 }
 
 .field {
@@ -28,8 +18,8 @@
     color: var(--text-primary);
   }
 
-  input,
-  select {
+  input[type='text'],
+  textarea {
     width: 100%;
     padding: 0.5rem 0.75rem;
     border: 1px solid var(--border);
@@ -45,8 +35,9 @@
     }
   }
 
-  select {
-    padding-inline-end: 1.75rem;
+  textarea {
+    resize: vertical;
+    min-height: 110px;
   }
 
   small {

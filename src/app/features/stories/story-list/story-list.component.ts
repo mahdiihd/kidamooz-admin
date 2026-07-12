@@ -185,6 +185,14 @@ export class StoryListComponent implements OnInit {
     return `${environment.mobileAppDeepLink}/${storyId}`;
   }
 
+  copyStoryId(storyId: string, event?: Event): void {
+    event?.stopPropagation();
+    void navigator.clipboard.writeText(storyId).then(
+      () => this.toast.success('شناسه قصه کپی شد'),
+      () => this.toast.error('کپی شناسه ناموفق بود'),
+    );
+  }
+
   private loadStories(): void {
     this.loading.set(true);
     const raw = this.filterForm.getRawValue();

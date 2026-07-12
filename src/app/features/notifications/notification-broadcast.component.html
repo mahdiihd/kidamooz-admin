@@ -1,0 +1,39 @@
+<app-page-header
+  title="ارسال نوتیفیکیشن"
+  subtitle="ارسال دستی پیام به همه دستگاه‌های اندروید"
+></app-page-header>
+
+<form [formGroup]="form" (ngSubmit)="submit()" class="form-card">
+  <div class="field">
+    <label for="title">عنوان</label>
+    <input id="title" type="text" formControlName="title" placeholder="قصه جدید آماده است" />
+  </div>
+
+  <div class="field">
+    <label for="body">متن پیام</label>
+    <textarea
+      id="body"
+      rows="4"
+      formControlName="body"
+      placeholder="امشب یک قصه تازه برای کوچولوها داریم"
+    ></textarea>
+  </div>
+
+  <div class="field">
+    <label for="storyId">شناسه قصه (اختیاری)</label>
+    <input
+      id="storyId"
+      type="text"
+      formControlName="storyId"
+      placeholder="از فهرست قصه‌ها کپی کنید"
+      dir="ltr"
+    />
+    <small>اگر پر شود، با لمس نوتیف صفحه همان قصه باز می‌شود</small>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn--primary" [disabled]="sending()">
+      {{ sending() ? 'در حال ارسال...' : 'ارسال به همه' }}
+    </button>
+  </div>
+</form>

@@ -73,6 +73,13 @@ export const routes: Routes = [
           import('./features/users/user-form/user-form.component').then((m) => m.UserFormComponent),
       },
       {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./features/notifications/notification-broadcast.component').then(
+            (m) => m.NotificationBroadcastComponent,
+          ),
+      },
+      {
         path: 'audit-log',
         loadComponent: () =>
           import('./features/audit-log/audit-log.component').then((m) => m.AuditLogComponent),

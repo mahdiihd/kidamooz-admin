@@ -24,6 +24,7 @@ export class AdminLayoutComponent {
     { label: 'دسته‌بندی‌ها', icon: '🗂️', path: '/categories' },
     { label: 'قصه‌ها', icon: '📖', path: '/stories' },
     { label: 'کاربران', icon: '👥', path: '/users' },
+    { label: 'نوتیفیکیشن', icon: '🔔', path: '/notifications' },
     { label: 'تاریخچه', icon: '📋', path: '/audit-log' },
   ];
 

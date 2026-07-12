@@ -82,6 +82,18 @@ export class StoryFormComponent implements OnInit {
     return id ? `${environment.mobileAppDeepLink}/${id}` : null;
   }
 
+  copyStoryId(): void {
+    const id = this.storyId();
+    if (!id) {
+      return;
+    }
+
+    void navigator.clipboard.writeText(id).then(
+      () => this.toast.success('شناسه قصه کپی شد'),
+      () => this.toast.error('کپی شناسه ناموفق بود'),
+    );
+  }
+
   onCoverUrlChange(url: string): void {
     this.form.patchValue({ coverUrl: url });
   }

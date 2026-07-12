@@ -39,13 +39,13 @@
     <option value="restricted">محدود</option>
   </select>
 
-  <button type="button" class="btn btn--secondary btn--sm" (click)="applyFilter()">فیلتر</button>
-  <button type="button" class="btn btn--ghost btn--sm" (click)="resetFilter()">پاک کردن</button>
+  <button type="button" class="btn btn--secondary" (click)="applyFilter()">فیلتر</button>
+  <button type="button" class="btn btn--ghost" (click)="resetFilter()">پاک کردن</button>
 
   <div class="view-toggle">
     <button
       type="button"
-      class="btn btn--sm"
+      class="btn"
       [class.btn--primary]="viewMode() === 'grid'"
       [class.btn--ghost]="viewMode() !== 'grid'"
       (click)="setViewMode('grid')"
@@ -54,7 +54,7 @@
     </button>
     <button
       type="button"
-      class="btn btn--sm"
+      class="btn"
       [class.btn--primary]="viewMode() === 'list'"
       [class.btn--ghost]="viewMode() !== 'list'"
       (click)="setViewMode('list')"
@@ -89,6 +89,17 @@
             <span class="duration">{{ story.durationSeconds | duration }}</span>
           </div>
           <h3>{{ story.title | localized }}</h3>
+          <div class="story-id">
+            <span class="story-id__value" dir="ltr">{{ story.id }}</span>
+            <button
+              type="button"
+              class="btn btn--ghost btn--sm"
+              title="کپی شناسه"
+              (click)="copyStoryId(story.id, $event)"
+            >
+              کپی
+            </button>
+          </div>
           <p class="category">{{ getCategoryTitle(story.categoryId) }}</p>
           <p class="audience">{{ story.access | storyAudienceSummary: segments() : users() }}</p>
           <p class="age">سن {{ story.ageMin }}–{{ story.ageMax }} سال</p>
@@ -133,6 +144,7 @@
           }
           <th>کاور</th>
           <th>عنوان</th>
+          <th>شناسه</th>
           <th>دسته</th>
           <th>دسترسی</th>
           <th>سن</th>
@@ -163,6 +175,19 @@
               @if (story.featured) {
                 <span class="inline-featured">⭐</span>
               }
+            </td>
+            <td>
+              <div class="story-id story-id--table">
+                <span class="story-id__value" dir="ltr">{{ story.id }}</span>
+                <button
+                  type="button"
+                  class="btn btn--ghost btn--sm"
+                  title="کپی شناسه"
+                  (click)="copyStoryId(story.id, $event)"
+                >
+                  کپی
+                </button>
+              </div>
             </td>
             <td>{{ getCategoryTitle(story.categoryId) }}</td>
             <td>
@@ -203,7 +228,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="8" class="empty">قصه‌ای یافت نشد</td>
+            <td colspan="9" class="empty">قصه‌ای یافت نشد</td>
           </tr>
         }
       </tbody>
