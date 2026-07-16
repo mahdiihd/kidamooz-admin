@@ -17,6 +17,8 @@ import { LocalizedPipe } from '../../../shared/pipes/localized.pipe';
 import {
   DEFAULT_PROGRESS_ICON,
   PROGRESS_ICON_OPTIONS,
+  ProgressIconKey,
+  normalizeProgressIconKey,
   progressIconAsset,
 } from '../../../core/models/progress-icon.model';
 
@@ -75,7 +77,7 @@ export class StoryFormComponent implements OnInit {
     return progressIconAsset(key);
   }
 
-  selectProgressIcon(key: string): void {
+  selectProgressIcon(key: ProgressIconKey): void {
     this.form.patchValue({ progressIcon: key });
   }
 
@@ -202,7 +204,7 @@ export class StoryFormComponent implements OnInit {
           ageMin: story.ageMin,
           ageMax: story.ageMax,
           categoryId: story.categoryId,
-          progressIcon: story.progressIcon || DEFAULT_PROGRESS_ICON,
+          progressIcon: normalizeProgressIconKey(story.progressIcon),
           featured: story.featured,
           sortOrder: story.sortOrder,
           published: story.published,

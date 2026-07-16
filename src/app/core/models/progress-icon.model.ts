@@ -14,9 +14,12 @@ export type ProgressIconKey = (typeof PROGRESS_ICON_OPTIONS)[number]['key'];
 
 export const DEFAULT_PROGRESS_ICON: ProgressIconKey = 'star';
 
-export function progressIconAsset(key: string | null | undefined): string {
-  const normalized = PROGRESS_ICON_OPTIONS.some((item) => item.key === key)
-    ? key!
+export function normalizeProgressIconKey(key: string | null | undefined): ProgressIconKey {
+  return PROGRESS_ICON_OPTIONS.some((item) => item.key === key)
+    ? (key as ProgressIconKey)
     : DEFAULT_PROGRESS_ICON;
-  return `assets/progress-icons/progress-${normalized}.png`;
+}
+
+export function progressIconAsset(key: string | null | undefined): string {
+  return `assets/progress-icons/progress-${normalizeProgressIconKey(key)}.png`;
 }
