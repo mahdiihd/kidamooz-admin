@@ -82,6 +82,25 @@
         </select>
       </div>
 
+      <div class="field">
+        <span class="field-label">آیکون پروگرس</span>
+        <div class="progress-icon-grid" role="listbox" aria-label="آیکون پروگرس">
+          @for (icon of progressIconOptions; track icon.key) {
+            <button
+              type="button"
+              class="progress-icon-option"
+              role="option"
+              [class.progress-icon-option--active]="form.controls.progressIcon.value === icon.key"
+              [attr.aria-selected]="form.controls.progressIcon.value === icon.key"
+              (click)="selectProgressIcon(icon.key)"
+            >
+              <img [src]="iconSrc(icon.key)" [alt]="icon.label" />
+              <span>{{ icon.label }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
       <div class="form-row">
         <div class="field">
           <label for="ageMin">حداقل سن</label>

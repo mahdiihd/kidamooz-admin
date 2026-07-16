@@ -138,6 +138,7 @@ export class StoryService {
     formData.append('ageMin', String(payload.ageMin));
     formData.append('ageMax', String(payload.ageMax));
     formData.append('categoryId', payload.categoryId);
+    formData.append('progressIcon', payload.progressIcon || 'star');
     formData.append('featured', String(payload.featured));
     formData.append('sortOrder', String(payload.sortOrder));
     formData.append('published', String(payload.published));

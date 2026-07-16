@@ -14,6 +14,11 @@ import { FileUploadComponent } from '../../../shared/components/file-upload/file
 import { ChaptersEditorComponent } from '../../../shared/components/chapters-editor/chapters-editor.component';
 import { StoryAccessEditorComponent } from '../../../shared/components/story-access-editor/story-access-editor.component';
 import { LocalizedPipe } from '../../../shared/pipes/localized.pipe';
+import {
+  DEFAULT_PROGRESS_ICON,
+  PROGRESS_ICON_OPTIONS,
+  progressIconAsset,
+} from '../../../core/models/progress-icon.model';
 
 @Component({
   selector: 'app-story-form',
@@ -47,6 +52,7 @@ export class StoryFormComponent implements OnInit {
   readonly saving = signal(false);
   readonly storyId = signal<string | null>(null);
   readonly categories = signal<Category[]>([]);
+  readonly progressIconOptions = PROGRESS_ICON_OPTIONS;
 
   readonly form = this.fb.nonNullable.group({
     title: [{ fa: '', en: '' }, Validators.required],
@@ -57,12 +63,21 @@ export class StoryFormComponent implements OnInit {
     ageMin: [3, [Validators.required, Validators.min(0)]],
     ageMax: [8, [Validators.required, Validators.min(0)]],
     categoryId: ['', Validators.required],
+    progressIcon: [DEFAULT_PROGRESS_ICON],
     featured: [false],
     sortOrder: [0, [Validators.required, Validators.min(0)]],
     published: [false],
     chapters: [[] as StoryChapter[]],
     access: [structuredClone(DEFAULT_STORY_ACCESS)],
   });
+
+  iconSrc(key: string): string {
+    return progressIconAsset(key);
+  }
+
+  selectProgressIcon(key: string): void {
+    this.form.patchValue({ progressIcon: key });
+  }
 
   ngOnInit(): void {
     this.categoryService.getAll().subscribe({
@@ -187,6 +202,7 @@ export class StoryFormComponent implements OnInit {
           ageMin: story.ageMin,
           ageMax: story.ageMax,
           categoryId: story.categoryId,
+          progressIcon: story.progressIcon || DEFAULT_PROGRESS_ICON,
           featured: story.featured,
           sortOrder: story.sortOrder,
           published: story.published,

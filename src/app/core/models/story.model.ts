@@ -11,6 +11,7 @@ export interface Story {
   ageMin: number;
   ageMax: number;
   categoryId: string;
+  progressIcon: string;
   featured: boolean;
   sortOrder: number;
   published: boolean;
