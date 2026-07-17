@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://kidamooz-back.liara.run/api/v1/admin',
+  apiBaseUrl: 'https://api.kidingo.ir/api/v1/admin',
   useMock: false,
   mobileAppDeepLink: 'kidamooz://story',
 };
