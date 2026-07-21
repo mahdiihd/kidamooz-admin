@@ -23,6 +23,7 @@ export class AdminLayoutComponent {
     { label: 'داشبورد', icon: '📊', path: '/dashboard' },
     { label: 'دسته‌بندی‌ها', icon: '🗂️', path: '/categories' },
     { label: 'قصه‌ها', icon: '📖', path: '/stories' },
+    { label: 'تأیید قصه‌ها', icon: '🎧', path: '/submissions' },
     { label: 'کاربران', icon: '👥', path: '/users' },
     { label: 'نوتیفیکیشن', icon: '🔔', path: '/notifications' },
     { label: 'تاریخچه', icon: '📋', path: '/audit-log' },

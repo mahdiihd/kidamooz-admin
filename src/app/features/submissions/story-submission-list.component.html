@@ -1,0 +1,73 @@
+<div class="page">
+  <header class="page__head">
+    <div>
+      <h1>قصه‌های در انتظار تأیید</h1>
+      <p>صدا را گوش دهید و با نام کاربر منتشر کنید.</p>
+    </div>
+    <button type="button" class="btn" (click)="reload()" [disabled]="loading()">بروزرسانی</button>
+  </header>
+
+  @if (error()) {
+    <p class="banner banner--error">{{ error() }}</p>
+  }
+  @if (message()) {
+    <p class="banner banner--ok">{{ message() }}</p>
+  }
+
+  <div class="layout">
+    <section class="list">
+      @if (loading()) {
+        <p class="muted">در حال بارگذاری…</p>
+      } @else if (items().length === 0) {
+        <p class="muted">موردی در صف نیست.</p>
+      } @else {
+        @for (item of items(); track item.id) {
+          <button
+            type="button"
+            class="card"
+            [class.card--active]="selected()?.id === item.id"
+            (click)="select(item)"
+          >
+            <strong>{{ item.titleFa || 'بدون عنوان' }}</strong>
+            <span>{{ item.authorName || '—' }} · {{ item.authorMobile || '' }}</span>
+            <span class="muted">{{ item.submittedAt | date: 'yyyy/MM/dd HH:mm' }}</span>
+          </button>
+        }
+      }
+    </section>
+
+    <section class="detail">
+      @if (!selected()) {
+        <p class="muted">یک مورد را از لیست انتخاب کنید.</p>
+      } @else {
+        <div class="detail__head">
+          <h2>{{ selected()!.titleFa }}</h2>
+          <p>راوی: <strong>{{ selected()!.authorName }}</strong> ({{ selected()!.authorMobile }})</p>
+        </div>
+
+        @if (selected()!.coverUrl) {
+          <img [src]="selected()!.coverUrl!" [alt]="selected()!.titleFa" class="cover" />
+        }
+
+        <h3>متن قصه</h3>
+        <pre class="script">{{ selected()!.storyScript }}</pre>
+
+        <h3>صدا</h3>
+        @if (selected()!.audioUrl) {
+          <audio controls [src]="selected()!.audioUrl!"></audio>
+        } @else {
+          <p class="muted">فایل صدا موجود نیست.</p>
+        }
+
+        <div class="actions">
+          <button type="button" class="btn btn--primary" (click)="approve()" [disabled]="acting()">
+            تأیید و انتشار
+          </button>
+          <button type="button" class="btn btn--danger" (click)="reject()" [disabled]="acting()">
+            رد کردن
+          </button>
+        </div>
+      }
+    </section>
+  </div>
+</div>

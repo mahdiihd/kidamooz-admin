@@ -63,6 +63,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'submissions',
+        loadComponent: () =>
+          import('./features/submissions/story-submission-list.component').then(
+            (m) => m.StorySubmissionListComponent,
+          ),
+      },
+      {
         path: 'users',
         loadComponent: () =>
           import('./features/users/user-list/user-list.component').then((m) => m.UserListComponent),
