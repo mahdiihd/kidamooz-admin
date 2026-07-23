@@ -1,11 +1,24 @@
 <div class="page">
   <header class="page__head">
     <div>
-      <h1>قصه‌های در انتظار تأیید</h1>
-      <p>صدا را گوش دهید و با نام کاربر منتشر کنید.</p>
+      <h1>قصه‌گویی کاربران</h1>
+      <p>همه پیش‌نویس‌ها با وضعیت؛ موارد در انتظار را تأیید یا رد کنید.</p>
     </div>
     <button type="button" class="btn" (click)="reload()" [disabled]="loading()">بروزرسانی</button>
   </header>
+
+  <div class="filters">
+    @for (item of filters; track item.id) {
+      <button
+        type="button"
+        class="chip"
+        [class.chip--active]="filter() === item.id"
+        (click)="setFilter(item.id)"
+      >
+        {{ item.label }}
+      </button>
+    }
+  </div>
 
   @if (error()) {
     <p class="banner banner--error">{{ error() }}</p>
@@ -19,7 +32,7 @@
       @if (loading()) {
         <p class="muted">در حال بارگذاری…</p>
       } @else if (items().length === 0) {
-        <p class="muted">موردی در صف نیست.</p>
+        <p class="muted">موردی نیست.</p>
       } @else {
         @for (item of items(); track item.id) {
           <button
@@ -30,7 +43,8 @@
           >
             <strong>{{ item.titleFa || 'بدون عنوان' }}</strong>
             <span>{{ item.authorName || '—' }} · {{ item.authorMobile || '' }}</span>
-            <span class="muted">{{ item.submittedAt | date: 'yyyy/MM/dd HH:mm' }}</span>
+            <span class="status">{{ statusLabel(item.status) }}</span>
+            <span class="muted">{{ item.updatedAt | date: 'yyyy/MM/dd HH:mm' }}</span>
           </button>
         }
       }
@@ -43,6 +57,13 @@
         <div class="detail__head">
           <h2>{{ selected()!.titleFa }}</h2>
           <p>راوی: <strong>{{ selected()!.authorName }}</strong> ({{ selected()!.authorMobile }})</p>
+          <p class="status-line">وضعیت: <strong>{{ statusLabel(selected()!.status) }}</strong></p>
+          @if (selected()!.publishedStoryId) {
+            <p class="muted">شناسه قصه منتشرشده: {{ selected()!.publishedStoryId }}</p>
+          }
+          @if (selected()!.rejectReason) {
+            <p class="banner banner--error">دلیل رد: {{ selected()!.rejectReason }}</p>
+          }
         </div>
 
         @if (selected()!.coverUrl) {
@@ -59,14 +80,16 @@
           <p class="muted">فایل صدا موجود نیست.</p>
         }
 
-        <div class="actions">
-          <button type="button" class="btn btn--primary" (click)="approve()" [disabled]="acting()">
-            تأیید و انتشار
-          </button>
-          <button type="button" class="btn btn--danger" (click)="reject()" [disabled]="acting()">
-            رد کردن
-          </button>
-        </div>
+        @if (canModerate()) {
+          <div class="actions">
+            <button type="button" class="btn btn--primary" (click)="approve()" [disabled]="acting()">
+              تأیید و انتشار
+            </button>
+            <button type="button" class="btn btn--danger" (click)="reject()" [disabled]="acting()">
+              رد کردن
+            </button>
+          </div>
+        }
       }
     </section>
   </div>

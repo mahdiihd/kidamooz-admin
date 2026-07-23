@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { sanitizeMediaUrl, sanitizePlainText } from '../utils/sanitize.util';
@@ -13,6 +13,7 @@ export interface StorySubmission {
   titleFa: string;
   descriptionFa: string;
   storyScript: string;
+  challengeTag?: string | null;
   audioUrl?: string | null;
   durationSeconds?: number | null;
   publishedStoryId?: string | null;
@@ -23,6 +24,7 @@ export interface StorySubmission {
   submittedAt?: string | null;
   createdAt: string;
   updatedAt: string;
+  canRemoveFromProfile?: boolean;
 }
 
 export interface ApproveStorySubmissionResponse {
@@ -55,10 +57,18 @@ export class StorySubmissionService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiBaseUrl}/story-submissions`;
 
-  listPending(): Observable<StorySubmission[]> {
+  list(status?: string | null): Observable<StorySubmission[]> {
+    let params = new HttpParams();
+    if (status) {
+      params = params.set('status', status);
+    }
     return this.http
-      .get<StorySubmission[]>(this.base)
+      .get<StorySubmission[]>(this.base, { params })
       .pipe(map((items) => items.map(sanitizeSubmission)));
+  }
+
+  listPending(): Observable<StorySubmission[]> {
+    return this.list('pending_review');
   }
 
   get(id: string): Observable<StorySubmission> {

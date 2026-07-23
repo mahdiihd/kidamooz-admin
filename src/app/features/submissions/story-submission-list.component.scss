@@ -20,6 +20,38 @@
   color: #64748b;
 }
 
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+}
+
+.chip {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.chip--active {
+  border-color: #0ea5e9;
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.status {
+  color: #0f766e;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.status-line {
+  margin: 0.35rem 0 0;
+}
+
 .layout {
   display: grid;
   grid-template-columns: minmax(240px, 320px) 1fr;
