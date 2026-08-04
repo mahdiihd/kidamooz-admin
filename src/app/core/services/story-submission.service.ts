@@ -85,9 +85,11 @@ export class StorySubmissionService {
       .pipe(map(sanitizeSubmission));
   }
 
-  approve(id: string): Observable<ApproveStorySubmissionResponse> {
+  approve(id: string, preferredNarration?: 'ai' | 'user'): Observable<ApproveStorySubmissionResponse> {
     return this.http
-      .post<ApproveStorySubmissionResponse>(`${this.base}/${id}/approve`, {})
+      .post<ApproveStorySubmissionResponse>(`${this.base}/${id}/approve`, {
+        preferredNarration: preferredNarration ?? 'ai',
+      })
       .pipe(
         map((res) => ({
           ...res,

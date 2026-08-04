@@ -515,8 +515,30 @@
   padding: 0.95rem 1.15rem;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem;
-  align-items: flex-start;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.narration-pick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  width: 100%;
+  margin-bottom: 0.15rem;
+}
+
+.narration-pick__label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.narration-pick__option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.86rem;
 }
 
 .reject-box {

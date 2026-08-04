@@ -204,6 +204,31 @@
       @if (canModerate()) {
         <footer class="review__bar">
           @if (!rejecting()) {
+            @if (canChooseNarration()) {
+              <div class="narration-pick">
+                <span class="narration-pick__label">روایت پیش‌فرض بعد از انتشار</span>
+                <label class="narration-pick__option">
+                  <input
+                    type="radio"
+                    name="preferredNarration"
+                    value="ai"
+                    [ngModel]="preferredNarration()"
+                    (ngModelChange)="preferredNarration.set($event)"
+                  />
+                  روایت هوش مصنوعی
+                </label>
+                <label class="narration-pick__option">
+                  <input
+                    type="radio"
+                    name="preferredNarration"
+                    value="user"
+                    [ngModel]="preferredNarration()"
+                    (ngModelChange)="preferredNarration.set($event)"
+                  />
+                  روایت کاربر
+                </label>
+              </div>
+            }
             <button
               type="button"
               class="btn btn--primary"

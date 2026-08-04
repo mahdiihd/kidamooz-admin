@@ -36,6 +36,7 @@ export class StorySubmissionListComponent implements OnInit {
   readonly error = signal('');
   readonly message = signal('');
   readonly filter = signal<StatusFilter>('all');
+  readonly preferredNarration = signal<'ai' | 'user'>('ai');
 
   readonly filters: { id: StatusFilter; label: string }[] = [
     { id: 'all', label: 'همه' },
@@ -52,6 +53,9 @@ export class StorySubmissionListComponent implements OnInit {
     return status === 'pending_review' || status === 'deleted';
   });
   readonly isRepublish = computed(() => this.selected()?.status === 'deleted');
+  readonly hasAiAudio = computed(() => Boolean(this.selected()?.audioUrl));
+  readonly hasUserAudio = computed(() => Boolean(this.selected()?.uploadedAudioUrl));
+  readonly canChooseNarration = computed(() => this.hasAiAudio() && this.hasUserAudio());
   readonly subtitle = computed(() => {
     const count = this.items().length;
     const filter = this.filter();
@@ -100,6 +104,7 @@ export class StorySubmissionListComponent implements OnInit {
     this.message.set('');
     this.rejecting.set(false);
     this.rejectReason.set('');
+    this.preferredNarration.set(item.uploadedAudioUrl && !item.audioUrl ? 'user' : 'ai');
   }
 
   approve(): void {
@@ -113,7 +118,12 @@ export class StorySubmissionListComponent implements OnInit {
     this.acting.set(true);
     this.message.set('');
     this.error.set('');
-    this.api.approve(item.id).subscribe({
+    const preferred = this.canChooseNarration()
+      ? this.preferredNarration()
+      : item.uploadedAudioUrl && !item.audioUrl
+        ? 'user'
+        : 'ai';
+    this.api.approve(item.id, preferred).subscribe({
       next: (res) => {
         this.acting.set(false);
         this.message.set(
