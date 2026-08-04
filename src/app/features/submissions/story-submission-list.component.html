@@ -1,96 +1,263 @@
-<div class="page">
-  <header class="page__head">
-    <div>
-      <h1>قصه‌گویی کاربران</h1>
-      <p>همه پیش‌نویس‌ها با وضعیت؛ موارد در انتظار را تأیید یا رد کنید.</p>
+<app-page-header title="قصه‌گویی کاربران" [subtitle]="subtitle()">
+  <button type="button" class="btn btn--secondary" (click)="reload()" [disabled]="loading()">
+    بروزرسانی
+  </button>
+</app-page-header>
+
+<nav class="filters" aria-label="فیلتر وضعیت">
+  @for (item of filters; track item.id) {
+    <button
+      type="button"
+      class="chip"
+      [class.chip--active]="filter() === item.id"
+      (click)="setFilter(item.id)"
+    >
+      {{ item.label }}
+    </button>
+  }
+</nav>
+
+@if (error()) {
+  <p class="banner banner--error" role="alert">{{ error() }}</p>
+}
+@if (message()) {
+  <p class="banner banner--ok" role="status">{{ message() }}</p>
+}
+
+<div class="workspace">
+  <aside class="queue">
+    <div class="queue__head">
+      <h2>صف بررسی</h2>
+      <span class="queue__count">{{ items().length }}</span>
     </div>
-    <button type="button" class="btn" (click)="reload()" [disabled]="loading()">بروزرسانی</button>
-  </header>
 
-  <div class="filters">
-    @for (item of filters; track item.id) {
-      <button
-        type="button"
-        class="chip"
-        [class.chip--active]="filter() === item.id"
-        (click)="setFilter(item.id)"
-      >
-        {{ item.label }}
-      </button>
-    }
-  </div>
-
-  @if (error()) {
-    <p class="banner banner--error">{{ error() }}</p>
-  }
-  @if (message()) {
-    <p class="banner banner--ok">{{ message() }}</p>
-  }
-
-  <div class="layout">
-    <section class="list">
-      @if (loading()) {
-        <p class="muted">در حال بارگذاری…</p>
-      } @else if (items().length === 0) {
-        <p class="muted">موردی نیست.</p>
-      } @else {
+    @if (loading()) {
+      <div class="state">در حال بارگذاری…</div>
+    } @else if (items().length === 0) {
+      <div class="state">
+        <strong>صف خالی است</strong>
+        <span>با تغییر فیلتر، موارد دیگر را ببینید.</span>
+      </div>
+    } @else {
+      <ul class="queue__list">
         @for (item of items(); track item.id) {
-          <button
-            type="button"
-            class="card"
-            [class.card--active]="selected()?.id === item.id"
-            (click)="select(item)"
-          >
-            <strong>{{ item.titleFa || 'بدون عنوان' }}</strong>
-            <span>{{ item.authorName || '—' }} · {{ item.authorMobile || '' }}</span>
-            <span class="status">{{ statusLabel(item.status) }}</span>
-            <span class="muted">{{ item.updatedAt | date: 'yyyy/MM/dd HH:mm' }}</span>
-          </button>
+          <li>
+            <button
+              type="button"
+              class="queue-item"
+              [class.queue-item--active]="selected()?.id === item.id"
+              (click)="select(item)"
+            >
+              <div class="queue-item__thumb">
+                @if (item.coverUrl) {
+                  <img [src]="item.coverUrl" [alt]="item.titleFa" />
+                } @else {
+                  <span class="queue-item__placeholder">🎧</span>
+                }
+              </div>
+              <div class="queue-item__body">
+                <strong>{{ item.titleFa || 'بدون عنوان' }}</strong>
+                <span class="queue-item__meta">
+                  {{ item.authorName || 'بدون نام' }}
+                  @if (item.authorMobile) {
+                    · {{ item.authorMobile }}
+                  }
+                </span>
+                <span
+                  class="badge"
+                  [attr.data-tone]="item.status | submissionStatus: 'tone'"
+                >
+                  {{ item.status | submissionStatus }}
+                </span>
+              </div>
+              <time class="queue-item__time">
+                {{ item.updatedAt | date: 'MM/dd HH:mm' }}
+              </time>
+            </button>
+          </li>
         }
-      }
-    </section>
+      </ul>
+    }
+  </aside>
 
-    <section class="detail">
-      @if (!selected()) {
-        <p class="muted">یک مورد را از لیست انتخاب کنید.</p>
-      } @else {
-        <div class="detail__head">
-          <h2>{{ selected()!.titleFa }}</h2>
-          <p>راوی: <strong>{{ selected()!.authorName }}</strong> ({{ selected()!.authorMobile }})</p>
-          <p class="status-line">وضعیت: <strong>{{ statusLabel(selected()!.status) }}</strong></p>
-          @if (selected()!.publishedStoryId) {
-            <p class="muted">شناسه قصه منتشرشده: {{ selected()!.publishedStoryId }}</p>
+  <section class="review">
+    @if (!selected()) {
+      <div class="review__empty">
+        <strong>یک قصه را انتخاب کنید</strong>
+        <span>کاور، متن و صدای راوی اینجا برای تأیید نمایش داده می‌شود.</span>
+      </div>
+    } @else {
+      <div class="review__stage">
+        <div class="hero">
+          @if (selected()!.coverUrl) {
+            <img
+              class="hero__cover"
+              [src]="selected()!.coverUrl!"
+              [alt]="selected()!.titleFa"
+            />
+          } @else {
+            <div class="hero__cover hero__cover--empty">بدون کاور</div>
           }
-          @if (selected()!.rejectReason) {
-            <p class="banner banner--error">دلیل رد: {{ selected()!.rejectReason }}</p>
-          }
+
+          <div class="hero__info">
+            <span
+              class="badge badge--lg"
+              [attr.data-tone]="selected()!.status | submissionStatus: 'tone'"
+            >
+              {{ selected()!.status | submissionStatus }}
+            </span>
+            <h2>{{ selected()!.titleFa || 'بدون عنوان' }}</h2>
+            @if (selected()!.descriptionFa) {
+              <p class="hero__desc">{{ selected()!.descriptionFa }}</p>
+            }
+            <dl class="meta">
+              <div>
+                <dt>راوی</dt>
+                <dd>{{ selected()!.authorName || '—' }}</dd>
+              </div>
+              <div>
+                <dt>موبایل</dt>
+                <dd>{{ selected()!.authorMobile || '—' }}</dd>
+              </div>
+              <div>
+                <dt>ارسال</dt>
+                <dd>
+                  {{
+                    (selected()!.submittedAt || selected()!.updatedAt)
+                      | date: 'yyyy/MM/dd HH:mm'
+                  }}
+                </dd>
+              </div>
+              <div>
+                <dt>مدت صدا</dt>
+                <dd>
+                  {{
+                    selected()!.durationSeconds
+                      ? selected()!.durationSeconds + ' ثانیه'
+                      : '—'
+                  }}
+                </dd>
+              </div>
+              <div>
+                <dt>دسته انتشار</dt>
+                <dd>خیال‌خونه</dd>
+              </div>
+            </dl>
+            @if (selected()!.titleEn) {
+              <p class="hint">EN: {{ selected()!.titleEn }}</p>
+            }
+            @if (selected()!.descriptionEn) {
+              <p class="hint">{{ selected()!.descriptionEn }}</p>
+            }
+            @if (selected()!.publishedStoryId) {
+              <p class="hint">شناسه قصه منتشرشده: {{ selected()!.publishedStoryId }}</p>
+            }
+            @if (selected()!.rejectReason) {
+              <p class="banner banner--error banner--inline">
+                دلیل رد: {{ selected()!.rejectReason }}
+              </p>
+            }
+          </div>
         </div>
 
-        @if (selected()!.coverUrl) {
-          <img [src]="selected()!.coverUrl!" [alt]="selected()!.titleFa" class="cover" />
-        }
+        <div class="panels">
+          <article class="panel">
+            <header class="panel__head">
+              <h3>متن قصه</h3>
+            </header>
+            <pre class="script">{{ selected()!.storyScript || 'متنی ثبت نشده.' }}</pre>
+          </article>
 
-        <h3>متن قصه</h3>
-        <pre class="script">{{ selected()!.storyScript }}</pre>
+          <article class="panel panel--audio">
+            <header class="panel__head">
+              <h3>روایت‌های صوتی</h3>
+            </header>
 
-        <h3>صدا</h3>
-        @if (selected()!.audioUrl) {
-          <audio controls [src]="selected()!.audioUrl!"></audio>
-        } @else {
-          <p class="muted">فایل صدا موجود نیست.</p>
-        }
+            @if (selected()!.audioUrl) {
+              <div class="audio-track">
+                <span class="audio-track__badge">روایت هوش مصنوعی</span>
+                <audio class="player" controls [src]="selected()!.audioUrl!"></audio>
+              </div>
+            }
 
-        @if (canModerate()) {
-          <div class="actions">
-            <button type="button" class="btn btn--primary" (click)="approve()" [disabled]="acting()">
-              تأیید و انتشار
+            @if (selected()!.uploadedAudioUrl) {
+              <div class="audio-track">
+                <span class="audio-track__badge audio-track__badge--user">روایت کاربر</span>
+                <audio class="player" controls [src]="selected()!.uploadedAudioUrl!"></audio>
+              </div>
+            }
+
+            @if (!selected()!.audioUrl && !selected()!.uploadedAudioUrl) {
+              <p class="hint">فایل صدا موجود نیست.</p>
+            }
+
+            @if (selected()!.drawingUrl) {
+              <div class="drawing">
+                <span>نقاشی اصلی</span>
+                <img [src]="selected()!.drawingUrl!" [alt]="'نقاشی ' + selected()!.titleFa" />
+              </div>
+            }
+          </article>
+        </div>
+      </div>
+
+      @if (canModerate()) {
+        <footer class="review__bar">
+          @if (!rejecting()) {
+            <button
+              type="button"
+              class="btn btn--primary"
+              (click)="approve()"
+              [disabled]="acting()"
+            >
+              @if (acting()) {
+                {{ isRepublish() ? 'در حال بازانتشار…' : 'در حال انتشار…' }}
+              } @else {
+                {{ isRepublish() ? 'بازانتشار در خیال‌خونه' : 'تأیید و انتشار در خیال‌خونه' }}
+              }
             </button>
-            <button type="button" class="btn btn--danger" (click)="reject()" [disabled]="acting()">
-              رد کردن
-            </button>
-          </div>
-        }
+            @if (!isRepublish()) {
+              <button
+                type="button"
+                class="btn btn--danger"
+                (click)="startReject()"
+                [disabled]="acting()"
+              >
+                رد کردن
+              </button>
+            }
+          } @else {
+            <div class="reject-box">
+              <label for="reject-reason">دلیل رد (اختیاری)</label>
+              <textarea
+                id="reject-reason"
+                rows="2"
+                [ngModel]="rejectReason()"
+                (ngModelChange)="onRejectReason($event)"
+                placeholder="مثلاً کیفیت صدا یا محتوای نامناسب…"
+              ></textarea>
+              <div class="reject-box__actions">
+                <button
+                  type="button"
+                  class="btn btn--danger"
+                  (click)="confirmReject()"
+                  [disabled]="acting()"
+                >
+                  {{ acting() ? 'در حال رد…' : 'تأیید رد' }}
+                </button>
+                <button
+                  type="button"
+                  class="btn btn--ghost"
+                  (click)="cancelReject()"
+                  [disabled]="acting()"
+                >
+                  انصراف
+                </button>
+              </div>
+            </div>
+          }
+        </footer>
       }
-    </section>
-  </div>
+    }
+  </section>
 </div>

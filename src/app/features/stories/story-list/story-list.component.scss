@@ -34,10 +34,38 @@
 }
 
 .view-toggle {
-  margin-right: auto;
+  margin-inline-start: auto;
   display: flex;
   gap: 0.25rem;
   align-items: stretch;
+}
+
+@media (max-width: 640px) {
+  .filter-bar {
+    select,
+    input[type='number'],
+    .btn {
+      flex: 1 1 calc(50% - 0.25rem);
+      min-width: 0;
+    }
+
+    input[type='number'] {
+      width: auto;
+    }
+  }
+
+  .view-toggle {
+    margin-inline-start: 0;
+    width: 100%;
+
+    .btn {
+      flex: 1;
+    }
+  }
+
+  .stories-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .sort-hint {

@@ -70,6 +70,20 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'members',
+        loadComponent: () =>
+          import('./features/members/member-list/member-list.component').then(
+            (m) => m.MemberListComponent,
+          ),
+      },
+      {
+        path: 'challenges',
+        loadComponent: () =>
+          import('./features/challenges/challenge-list/challenge-list.component').then(
+            (m) => m.ChallengeListComponent,
+          ),
+      },
+      {
         path: 'users',
         loadComponent: () =>
           import('./features/users/user-list/user-list.component').then((m) => m.UserListComponent),

@@ -12,9 +12,12 @@ export interface StorySubmission {
   usedFallbackCover: boolean;
   titleFa: string;
   descriptionFa: string;
+  titleEn?: string;
+  descriptionEn?: string;
   storyScript: string;
   challengeTag?: string | null;
   audioUrl?: string | null;
+  uploadedAudioUrl?: string | null;
   durationSeconds?: number | null;
   publishedStoryId?: string | null;
   errorMessage?: string | null;
@@ -39,8 +42,13 @@ function sanitizeSubmission(item: StorySubmission): StorySubmission {
     drawingUrl: sanitizeMediaUrl(item.drawingUrl),
     coverUrl: sanitizeMediaUrl(item.coverUrl),
     audioUrl: sanitizeMediaUrl(item.audioUrl),
+    uploadedAudioUrl: sanitizeMediaUrl(item.uploadedAudioUrl),
     titleFa: sanitizePlainText(item.titleFa, 300),
     descriptionFa: sanitizePlainText(item.descriptionFa, 2000),
+    titleEn: item.titleEn ? sanitizePlainText(item.titleEn, 300) : item.titleEn,
+    descriptionEn: item.descriptionEn
+      ? sanitizePlainText(item.descriptionEn, 2000)
+      : item.descriptionEn,
     storyScript: sanitizePlainText(item.storyScript, 8000),
     authorName: item.authorName ? sanitizePlainText(item.authorName, 200) : item.authorName,
     errorMessage: item.errorMessage

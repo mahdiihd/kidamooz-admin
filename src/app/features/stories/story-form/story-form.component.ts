@@ -2,10 +2,11 @@ import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { StoryService } from '../../../core/services/story.service';
+import { StoryOfTheDayService } from '../../../core/services/story-of-the-day.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Category } from '../../../core/models/category.model';
-import { StoryChapter } from '../../../core/models/story.model';
+import { StoryChapter, StoryDetail } from '../../../core/models/story.model';
 import { DEFAULT_STORY_ACCESS } from '../../../core/models/story-access.model';
 import { environment } from '../../../../environments/environment';
 import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
@@ -21,6 +22,7 @@ import {
   normalizeProgressIconKey,
   progressIconAsset,
 } from '../../../core/models/progress-icon.model';
+import { of, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-story-form',
@@ -41,6 +43,7 @@ import {
 export class StoryFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly storyService = inject(StoryService);
+  private readonly storyOfTheDay = inject(StoryOfTheDayService);
   private readonly categoryService = inject(CategoryService);
   private readonly toast = inject(ToastService);
   private readonly route = inject(ActivatedRoute);
@@ -55,6 +58,7 @@ export class StoryFormComponent implements OnInit {
   readonly storyId = signal<string | null>(null);
   readonly categories = signal<Category[]>([]);
   readonly progressIconOptions = PROGRESS_ICON_OPTIONS;
+  private wasStoryOfTheDay = false;
 
   readonly form = this.fb.nonNullable.group({
     title: [{ fa: '', en: '' }, Validators.required],
@@ -67,6 +71,7 @@ export class StoryFormComponent implements OnInit {
     categoryId: ['', Validators.required],
     progressIcon: [DEFAULT_PROGRESS_ICON],
     featured: [false],
+    storyOfTheDay: [false],
     sortOrder: [0, [Validators.required, Validators.min(0)]],
     published: [false],
     chapters: [[] as StoryChapter[]],
@@ -167,23 +172,45 @@ export class StoryFormComponent implements OnInit {
 
     this.saving.set(true);
     const id = this.storyId();
-    const { chapters, ...payload } = raw;
+    const { chapters, storyOfTheDay, ...payload } = raw;
     const media = {
       cover: cover.pendingFile(),
       audio: audio.pendingFile(),
       chapterImages: chaptersUi?.chapterImageFiles() ?? [],
     };
 
+    if (storyOfTheDay && !raw.published) {
+      this.saving.set(false);
+      this.toast.error('برای قصه امروز، قصه باید منتشر شود');
+      return;
+    }
+
     const save$ = id
       ? this.storyService.update(id, payload, chapters, media)
       : this.storyService.create(payload, chapters, media);
 
-    save$.subscribe({
-      next: () => this.finishSave(),
-      error: () => {
-        this.saving.set(false);
-      },
-    });
+    save$
+      .pipe(switchMap((saved) => this.syncStoryOfTheDay(saved, storyOfTheDay)))
+      .subscribe({
+        next: () => this.finishSave(),
+        error: (err) => {
+          this.saving.set(false);
+          if (err?.error?.message) {
+            this.toast.error(err.error.message);
+          }
+        },
+      });
+  }
+
+  private syncStoryOfTheDay(saved: StoryDetail, wantStoryOfTheDay: boolean) {
+    const id = saved.id;
+    if (wantStoryOfTheDay) {
+      return this.storyOfTheDay.setToday(id);
+    }
+    if (this.wasStoryOfTheDay) {
+      return this.storyOfTheDay.clearToday(id);
+    }
+    return of(null);
   }
 
   private finishSave(): void {
@@ -213,6 +240,21 @@ export class StoryFormComponent implements OnInit {
         });
         this.coverUpload()?.setInitialUrl(story.coverUrl);
         this.audioUpload()?.setInitialUrl(story.audioUrl);
+        this.loadStoryOfTheDayFlag(id);
+      },
+    });
+  }
+
+  private loadStoryOfTheDayFlag(storyId: string): void {
+    this.storyOfTheDay.getToday().subscribe({
+      next: (today) => {
+        const isToday = !!today && today.storyId === storyId;
+        this.wasStoryOfTheDay = isToday;
+        this.form.patchValue({ storyOfTheDay: isToday });
+      },
+      error: () => {
+        this.wasStoryOfTheDay = false;
+        this.form.patchValue({ storyOfTheDay: false });
       },
     });
   }

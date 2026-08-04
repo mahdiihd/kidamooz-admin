@@ -1,0 +1,116 @@
+<app-page-header
+  title="چالش‌های هفتگی"
+  subtitle="افزودن چالش جدید و مشاهده چالش‌های قبلی"
+>
+  <button type="button" class="btn btn--primary" (click)="openCreate()">چالش جدید</button>
+</app-page-header>
+
+@if (formOpen()) {
+  <form [formGroup]="form" (ngSubmit)="submit()" class="form-card">
+    <h2>{{ editing() ? 'ویرایش چالش' : 'چالش جدید' }}</h2>
+
+    <div class="field">
+      <label for="titleFa">عنوان</label>
+      <input id="titleFa" type="text" formControlName="titleFa" placeholder="چالش این هفته: ..." />
+    </div>
+
+    <div class="field">
+      <label for="themeTag">تگ تم</label>
+      <input
+        id="themeTag"
+        type="text"
+        formControlName="themeTag"
+        placeholder="animals"
+        dir="ltr"
+      />
+      <small>مثلاً animals — در ساخت قصه به عنوان challengeTag استفاده می‌شود</small>
+    </div>
+
+    <div class="field">
+      <label for="descriptionFa">توضیح</label>
+      <textarea
+        id="descriptionFa"
+        rows="3"
+        formControlName="descriptionFa"
+        placeholder="توضیح کوتاه برای کودک و والدین"
+      ></textarea>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="weekStart">شروع هفته</label>
+        <input id="weekStart" type="date" formControlName="weekStart" dir="ltr" />
+      </div>
+      <div class="field">
+        <label for="weekEnd">پایان هفته</label>
+        <input id="weekEnd" type="date" formControlName="weekEnd" dir="ltr" />
+      </div>
+    </div>
+
+    <label class="check">
+      <input type="checkbox" formControlName="isActive" />
+      فعال باشد (در اپ نمایش داده شود)
+    </label>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn--primary" [disabled]="saving()">
+        {{ saving() ? 'در حال ذخیره...' : 'ذخیره' }}
+      </button>
+      <button type="button" class="btn btn--ghost" (click)="closeForm()">انصراف</button>
+    </div>
+  </form>
+}
+
+@if (loading()) {
+  <div class="loading">در حال بارگذاری...</div>
+} @else {
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>عنوان</th>
+          <th>تگ</th>
+          <th>بازه هفته</th>
+          <th>وضعیت</th>
+          <th>ایجاد</th>
+          <th>عملیات</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of items(); track item.id) {
+          <tr>
+            <td>
+              <strong>{{ item.titleFa }}</strong>
+              <div class="desc">{{ item.descriptionFa }}</div>
+            </td>
+            <td dir="ltr">{{ item.themeTag }}</td>
+            <td dir="ltr">{{ item.weekStart }} — {{ item.weekEnd }}</td>
+            <td>
+              <span class="status-dot" [class.status-dot--active]="item.isActive">
+                {{ item.isActive ? 'فعال' : 'غیرفعال' }}
+              </span>
+            </td>
+            <td>{{ item.createdAt | jalaliDate }}</td>
+            <td>
+              <div class="row-actions">
+                <button type="button" class="btn btn--ghost btn--sm" (click)="openEdit(item)">
+                  ویرایش
+                </button>
+                <button type="button" class="btn btn--ghost btn--sm" (click)="toggleActive(item)">
+                  {{ item.isActive ? 'غیرفعال' : 'فعال' }}
+                </button>
+                <button type="button" class="btn btn--danger btn--sm" (click)="deleteItem(item)">
+                  حذف
+                </button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty">چالشی ثبت نشده</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

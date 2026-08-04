@@ -40,6 +40,7 @@ import { Component, input } from '@angular/core';
 
     .actions {
       display: flex;
+      flex-wrap: wrap;
       gap: 0.5rem;
       flex-shrink: 0;
     }
@@ -47,6 +48,20 @@ import { Component, input } from '@angular/core';
     @media (max-width: 640px) {
       .page-header {
         flex-direction: column;
+        align-items: stretch;
+        margin-bottom: 1rem;
+      }
+
+      h1 {
+        font-size: 1.25rem;
+      }
+
+      .actions {
+        width: 100%;
+      }
+
+      .actions :is(a, button) {
+        flex: 1 1 auto;
       }
     }
   `,

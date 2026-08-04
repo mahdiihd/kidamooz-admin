@@ -1,128 +1,166 @@
-<app-page-header title="داشبورد" subtitle="نمای کلی محتوای کیداموز" />
+<app-page-header title="داشبورد" subtitle="نمای کلی محتوا و بازدید کیداموز" />
 
 @if (loading()) {
   <div class="loading">در حال بارگذاری...</div>
 } @else if (stats(); as s) {
-  <div class="stats-grid">
-    <div class="stat-card">
-      <span class="stat-icon">📖</span>
-      <div>
-        <span class="stat-value">{{ s.totalStories }}</span>
-        <span class="stat-label">کل قصه‌ها</span>
+  <section class="kpi-row" aria-label="شاخص‌های کلیدی">
+    <article class="kpi">
+      <span class="kpi__label">کل قصه‌ها</span>
+      <strong class="kpi__value">{{ s.totalStories | number }}</strong>
+    </article>
+    <article class="kpi">
+      <span class="kpi__label">منتشرشده</span>
+      <strong class="kpi__value">{{ s.publishedStories | number }}</strong>
+    </article>
+    <article class="kpi">
+      <span class="kpi__label">بازدید امروز</span>
+      <strong class="kpi__value">{{ s.views.today | number }}</strong>
+    </article>
+    <article class="kpi kpi--accent">
+      <span class="kpi__label">کل بازدید</span>
+      <strong class="kpi__value">{{ s.views.total | number }}</strong>
+    </article>
+  </section>
+
+  <section class="charts" aria-label="نمودارها">
+    <article class="chart-panel">
+      <header class="chart-panel__head">
+        <div>
+          <h2>وضعیت قصه‌ها</h2>
+          <p>ترکیب انتشار، پیش‌نویس و ویژه</p>
+        </div>
+      </header>
+
+      <div class="donut-layout">
+        <div class="donut" role="img" [attr.aria-label]="'مجموع ' + storyTotal() + ' قصه'">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="donut__track" cx="60" cy="60" r="42" />
+            @for (seg of storyDonut(); track seg.label) {
+              <circle
+                class="donut__segment"
+                cx="60"
+                cy="60"
+                r="42"
+                [attr.stroke]="seg.color"
+                [attr.stroke-dasharray]="seg.dashArray"
+                [attr.stroke-dashoffset]="seg.dashOffset"
+              />
+            }
+          </svg>
+          <div class="donut__center">
+            <strong>{{ storyTotal() | number }}</strong>
+            <span>قصه</span>
+          </div>
+        </div>
+
+        <ul class="legend">
+          @for (slice of storySlices(); track slice.label) {
+            <li>
+              <span class="legend__swatch" [style.background]="slice.color"></span>
+              <span class="legend__label">{{ slice.label }}</span>
+              <strong>{{ slice.value | number }}</strong>
+            </li>
+          }
+          <li>
+            <span class="legend__swatch" style="background: #6b4eff"></span>
+            <span class="legend__label">ویژه (از منتشرشده‌ها)</span>
+            <strong>{{ featuredCount() | number }}</strong>
+          </li>
+        </ul>
       </div>
-    </div>
+    </article>
 
-    <div class="stat-card">
-      <span class="stat-icon">✅</span>
-      <div>
-        <span class="stat-value">{{ s.publishedStories }}</span>
-        <span class="stat-label">منتشر شده</span>
+    <article class="chart-panel">
+      <header class="chart-panel__head">
+        <div>
+          <h2>بازدیدها</h2>
+          <p>مقایسه امروز، هفته و مجموع</p>
+        </div>
+      </header>
+
+      <ul class="bars" aria-label="نمودار میله‌ای بازدید">
+        @for (bar of viewBars(); track bar.label) {
+          <li>
+            <div class="bars__meta">
+              <span>{{ bar.label }}</span>
+              <strong>{{ bar.value | number }}</strong>
+            </div>
+            <div class="bars__track">
+              <span
+                class="bars__fill"
+                [style.width.%]="bar.percent"
+                [style.background]="bar.color"
+              ></span>
+            </div>
+          </li>
+        }
+      </ul>
+
+      <div class="category-meter">
+        <div class="category-meter__head">
+          <span>دسته‌های فعال</span>
+          <strong>{{ s.publishedCategories }}/{{ s.totalCategories }}</strong>
+        </div>
+        <div class="category-meter__track">
+          <span class="category-meter__fill" [style.width.%]="categoryPercent()"></span>
+        </div>
       </div>
-    </div>
+    </article>
+  </section>
 
-    <div class="stat-card">
-      <span class="stat-icon">📝</span>
-      <div>
-        <span class="stat-value">{{ s.draftStories }}</span>
-        <span class="stat-label">پیش‌نویس</span>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <span class="stat-icon">⭐</span>
-      <div>
-        <span class="stat-value">{{ s.featuredStories }}</span>
-        <span class="stat-label">قصه ویژه</span>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <span class="stat-icon">🗂️</span>
-      <div>
-        <span class="stat-value">{{ s.publishedCategories }}/{{ s.totalCategories }}</span>
-        <span class="stat-label">دسته فعال</span>
-      </div>
-    </div>
-
-    <div class="stat-card stat-card--views">
-      <span class="stat-icon">👁️</span>
-      <div>
-        <span class="stat-value">{{ s.views.total | number }}</span>
-        <span class="stat-label">کل بازدیدها</span>
-      </div>
-    </div>
-
-    <div class="stat-card stat-card--views">
-      <span class="stat-icon">📈</span>
-      <div>
-        <span class="stat-value">{{ s.views.today | number }}</span>
-        <span class="stat-label">بازدید امروز</span>
-      </div>
-    </div>
-
-    <div class="stat-card stat-card--views">
-      <span class="stat-icon">📅</span>
-      <div>
-        <span class="stat-value">{{ s.views.thisWeek | number }}</span>
-        <span class="stat-label">بازدید این هفته</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="info-grid">
-    <div class="info-card">
-      <div class="info-card-header">
-        <h3>نسخه کاتالوگ</h3>
-        <button
-          type="button"
-          class="btn btn--secondary btn--sm"
-          [disabled]="rebuilding()"
-          (click)="rebuildCatalog()"
-        >
-          {{ rebuilding() ? '...' : 'بازسازی' }}
-        </button>
-      </div>
-      <p class="version">{{ s.catalogVersion.version }}</p>
-      <small>آخرین به‌روزرسانی: {{ s.catalogVersion.updatedAt | jalaliDate }}</small>
-    </div>
-
-    <div class="info-card">
-      <h3>آخرین انتشار</h3>
-      @if (s.lastPublishedAt) {
-        <p>{{ s.lastPublishedAt | jalaliDate }}</p>
-      } @else {
-        <p class="muted">هنوز قصه‌ای منتشر نشده</p>
-      }
-    </div>
-  </div>
-
-  <div class="panel-grid">
-    <div class="panel">
-      <div class="panel-header">
-        <h3>آخرین فعالیت‌ها</h3>
+  <section class="lower">
+    <article class="panel">
+      <div class="panel__head">
+        <h2>آخرین فعالیت‌ها</h2>
         <a routerLink="/audit-log" class="btn btn--ghost btn--sm">مشاهده همه</a>
       </div>
-      <ul class="activity-list">
+      <ul class="activity">
         @for (log of recentLogs(); track log.id) {
           <li>
-            <span class="activity-action">{{ log.action | auditAction }}</span>
-            <span class="activity-title">{{ log.entityTitle }}</span>
+            <span class="activity__action">{{ log.action | auditAction }}</span>
+            <span class="activity__title">{{ log.entityTitle }}</span>
             <time>{{ log.timestamp | jalaliDate }}</time>
           </li>
         } @empty {
-          <li class="muted">فعالیتی ثبت نشده</li>
+          <li class="activity__empty">فعالیتی ثبت نشده</li>
         }
       </ul>
-    </div>
+    </article>
 
-    <div class="panel">
-      <h3>دسترسی سریع</h3>
-      <div class="actions-row">
-        <a routerLink="/stories/new" class="btn btn--primary">قصه جدید</a>
-        <a routerLink="/categories/new" class="btn btn--secondary">دسته جدید</a>
-        <a routerLink="/stories" class="btn btn--ghost">مدیریت قصه‌ها</a>
-        <a routerLink="/stories" [queryParams]="{ featured: 'true' }" class="btn btn--ghost">قصه‌های ویژه</a>
-      </div>
+    <div class="side-stack">
+      <article class="panel">
+        <div class="panel__head">
+          <h2>کاتالوگ</h2>
+          <button
+            type="button"
+            class="btn btn--secondary btn--sm"
+            [disabled]="rebuilding()"
+            (click)="rebuildCatalog()"
+          >
+            {{ rebuilding() ? '...' : 'بازسازی' }}
+          </button>
+        </div>
+        <p class="version">{{ s.catalogVersion.version }}</p>
+        <p class="muted">به‌روزرسانی: {{ s.catalogVersion.updatedAt | jalaliDate }}</p>
+        <p class="muted">
+          آخرین انتشار:
+          @if (s.lastPublishedAt) {
+            {{ s.lastPublishedAt | jalaliDate }}
+          } @else {
+            —
+          }
+        </p>
+      </article>
+
+      <article class="panel">
+        <h2>دسترسی سریع</h2>
+        <div class="quick">
+          <a routerLink="/stories/new" class="btn btn--primary">قصه جدید</a>
+          <a routerLink="/submissions" class="btn btn--secondary">قصه‌گویی</a>
+          <a routerLink="/categories/new" class="btn btn--ghost">دسته جدید</a>
+          <a routerLink="/stories" class="btn btn--ghost">مدیریت قصه‌ها</a>
+        </div>
+      </article>
     </div>
-  </div>
+  </section>
 }

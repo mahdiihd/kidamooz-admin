@@ -1,31 +1,107 @@
-<aside class="sidebar">
-  <div class="brand">
-    <span class="brand-icon">🌙</span>
-    <div>
-      <strong>کیداموز</strong>
-      <small>پنل مدیریت</small>
+<div class="shell" [class.shell--menu-open]="menuOpen()">
+  <header class="topbar">
+    <button
+      type="button"
+      class="menu-toggle"
+      (click)="toggleMenu()"
+      [attr.aria-expanded]="menuOpen()"
+      aria-controls="admin-sidebar"
+      aria-label="باز و بسته کردن منو"
+    >
+      <span class="menu-toggle__bar" aria-hidden="true"></span>
+      <span class="menu-toggle__bar" aria-hidden="true"></span>
+      <span class="menu-toggle__bar" aria-hidden="true"></span>
+    </button>
+
+    <div class="topbar__brand">
+      <span class="topbar__icon" aria-hidden="true">🌙</span>
+      <div>
+        <strong>کیداموز</strong>
+        <small>پنل مدیریت</small>
+      </div>
     </div>
-  </div>
+  </header>
 
-  <nav class="nav">
-    @for (item of navItems; track item.path) {
-      <a
-        class="nav-item"
-        [routerLink]="item.path"
-        routerLinkActive="nav-item--active"
+  <button
+    type="button"
+    class="backdrop"
+    [class.backdrop--visible]="menuOpen()"
+    (click)="closeMenu()"
+    [attr.aria-hidden]="!menuOpen()"
+    tabindex="-1"
+  ></button>
+
+  <aside
+    id="admin-sidebar"
+    class="sidebar"
+    [class.sidebar--open]="menuOpen()"
+    [attr.aria-hidden]="false"
+  >
+    <div class="sidebar__head">
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">🌙</span>
+        <div>
+          <strong>کیداموز</strong>
+          <small>پنل مدیریت</small>
+        </div>
+      </div>
+      <button
+        type="button"
+        class="sidebar__close"
+        (click)="closeMenu()"
+        aria-label="بستن منو"
       >
-        <span class="nav-icon">{{ item.icon }}</span>
-        {{ item.label }}
-      </a>
-    }
-  </nav>
+        ✕
+      </button>
+    </div>
 
-  <button type="button" class="logout-btn" (click)="logout()">
-    <span>🚪</span>
-    خروج
-  </button>
-</aside>
+    <nav class="nav" aria-label="منوی اصلی">
+      @for (item of navItems; track item.path) {
+        <a
+          class="nav-item"
+          [routerLink]="item.path"
+          routerLinkActive="nav-item--active"
+          (click)="closeMenu()"
+        >
+          <span class="nav-icon" aria-hidden="true">{{ item.icon }}</span>
+          {{ item.label }}
+        </a>
+      }
+    </nav>
 
-<main class="main">
-  <router-outlet />
-</main>
+    <button type="button" class="logout-btn" (click)="logout()">
+      <svg
+        class="logout-btn__icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M16 8l4 4-4 4"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M9 12h11"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+        />
+      </svg>
+      خروج
+    </button>
+  </aside>
+
+  <main class="main">
+    <router-outlet />
+  </main>
+</div>

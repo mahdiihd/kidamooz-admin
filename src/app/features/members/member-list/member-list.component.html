@@ -1,0 +1,76 @@
+<app-page-header
+  title="کاربران اپلیکیشن"
+  subtitle="اعضای ثبت‌نام‌شده در اپلیکیشن موبایل و وب"
+/>
+
+<div class="toolbar">
+  <label class="search-field">
+    <span class="sr-only">جستجو</span>
+    <input
+      type="search"
+      [formControl]="searchControl"
+      placeholder="جستجو با نام، موبایل یا ایمیل..."
+      autocomplete="off"
+    />
+  </label>
+  <span class="count">{{ members().length }} کاربر</span>
+</div>
+
+@if (loading()) {
+  <div class="loading">در حال بارگذاری...</div>
+} @else {
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>نام</th>
+          <th>موبایل</th>
+          <th>پلن</th>
+          <th>وضعیت</th>
+          <th>استریک گوش دادن</th>
+          <th>تاریخ عضویت</th>
+          <th>عملیات</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (member of members(); track member.id) {
+          <tr>
+            <td>
+              <strong>{{ member.displayName }}</strong>
+            </td>
+            <td dir="ltr">{{ member.mobile || '—' }}</td>
+            <td>
+              <span
+                class="plan-badge"
+                [class.plan-badge--plus]="member.planTier === 'plus'"
+              >
+                {{ member.planTier | memberPlan }}
+              </span>
+            </td>
+            <td>
+              <span class="status-dot" [class.status-dot--active]="member.isActive">
+                {{ member.isActive ? 'فعال' : 'غیرفعال' }}
+              </span>
+            </td>
+            <td>{{ member.listenStreak }}</td>
+            <td>{{ member.createdAt | jalaliDate }}</td>
+            <td>
+              <button
+                type="button"
+                class="btn btn--danger btn--sm"
+                [disabled]="deletingId() === member.id"
+                (click)="deleteMember(member)"
+              >
+                {{ deletingId() === member.id ? '...' : 'حذف' }}
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="empty">کاربری یافت نشد</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
