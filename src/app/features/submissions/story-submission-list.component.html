@@ -68,6 +68,7 @@
                   [attr.data-tone]="item.status | submissionStatus: 'tone'"
                 >
                   {{ item.status | submissionStatus }}
+                  @if (item.coverChoice === 'ai_free') { · جلد رایگان }
                 </span>
               </div>
               <time class="queue-item__time">
@@ -160,6 +161,19 @@
           </div>
         </div>
 
+        @if (selected()!.coverChoice === 'ai_free') {
+          <p class="banner" role="status">درخواست کاربر: کاور هوش مصنوعی رایگان — جلد را پیش از تأیید قصه بارگذاری کنید.</p>
+        }
+        @if (canModerate()) {
+          @for (item of [selected()!]; track item.id) {
+            <fieldset class="panel" [disabled]="acting()">
+              <legend>جلد هنگام انتشار</legend>
+              <app-file-upload label="بارگذاری جلد نهایی" mediaType="cover"
+                hint="انتخاب تصویر جلد — PNG، JPG یا WebP، حداکثر ۲ مگابایت"
+                (fileChange)="coverFile.set($event)" />
+            </fieldset>
+          }
+        }
         <div class="panels">
           <article class="panel">
             <header class="panel__head">

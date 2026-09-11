@@ -1,4 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Observable, of, switchMap } from 'rxjs';
+import { MediaService } from '../../core/services/media.service';
+import { FileUploadComponent } from '../../shared/components/file-upload/file-upload.component';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -20,12 +23,15 @@ type StatusFilter =
 @Component({
   selector: 'app-story-submission-list',
   standalone: true,
-  imports: [DatePipe, FormsModule, PageHeaderComponent, SubmissionStatusPipe],
+  imports: [FileUploadComponent, DatePipe, FormsModule, PageHeaderComponent, SubmissionStatusPipe],
   templateUrl: './story-submission-list.component.html',
   styleUrl: './story-submission-list.component.scss',
 })
 export class StorySubmissionListComponent implements OnInit {
   private readonly api = inject(StorySubmissionService);
+
+  private readonly media = inject(MediaService);
+  readonly coverFile = signal<File | null>(null);
 
   readonly items = signal<StorySubmission[]>([]);
   readonly selected = signal<StorySubmission | null>(null);
@@ -70,6 +76,9 @@ export class StorySubmissionListComponent implements OnInit {
   }
 
   setFilter(filter: StatusFilter): void {
+    if (this.acting()) return;
+    this.coverFile.set(null);
+    this.selected.set(null);
     this.filter.set(filter);
     this.rejecting.set(false);
     this.rejectReason.set('');
@@ -77,6 +86,7 @@ export class StorySubmissionListComponent implements OnInit {
   }
 
   reload(): void {
+    if (this.acting()) return;
     this.loading.set(true);
     this.error.set('');
     const status = this.filter() === 'all' ? null : this.filter();
@@ -100,6 +110,8 @@ export class StorySubmissionListComponent implements OnInit {
   }
 
   select(item: StorySubmission): void {
+    if (this.acting() || this.selected()?.id === item.id) return;
+    this.coverFile.set(null);
     this.selected.set(item);
     this.message.set('');
     this.rejecting.set(false);
@@ -115,6 +127,10 @@ export class StorySubmissionListComponent implements OnInit {
     if (item.status !== 'pending_review' && item.status !== 'deleted') {
       return;
     }
+    if (item.coverChoice === 'ai_free' && item.coverUrl === item.drawingUrl && !this.coverFile()) {
+      this.error.set('پیش از تأیید، جلد رایگان درخواستی کاربر را بارگذاری کنید.');
+      return;
+    }
     this.acting.set(true);
     this.message.set('');
     this.error.set('');
@@ -123,7 +139,9 @@ export class StorySubmissionListComponent implements OnInit {
       : item.uploadedAudioUrl && !item.audioUrl
         ? 'user'
         : 'ai';
-    this.api.approve(item.id, preferred).subscribe({
+    const file = this.coverFile();
+    const upload: Observable<string | undefined> = file ? this.media.uploadLocal(file, 'cover') : of(undefined);
+    upload.pipe(switchMap((coverUrl) => this.api.approve(item.id, preferred, coverUrl))).subscribe({
       next: (res) => {
         this.acting.set(false);
         this.message.set(

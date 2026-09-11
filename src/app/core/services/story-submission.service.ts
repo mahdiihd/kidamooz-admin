@@ -9,6 +9,7 @@ export interface StorySubmission {
   status: string;
   drawingUrl?: string | null;
   coverUrl?: string | null;
+  coverChoice?: string;
   usedFallbackCover: boolean;
   titleFa: string;
   descriptionFa: string;
@@ -85,10 +86,11 @@ export class StorySubmissionService {
       .pipe(map(sanitizeSubmission));
   }
 
-  approve(id: string, preferredNarration?: 'ai' | 'user'): Observable<ApproveStorySubmissionResponse> {
+  approve(id: string, preferredNarration?: 'ai' | 'user', coverUrl?: string): Observable<ApproveStorySubmissionResponse> {
     return this.http
       .post<ApproveStorySubmissionResponse>(`${this.base}/${id}/approve`, {
         preferredNarration: preferredNarration ?? 'ai',
+        coverUrl,
       })
       .pipe(
         map((res) => ({
