@@ -2,7 +2,7 @@
 
 This guide applies to every file in this project.
 
-- Project overview and structure: [spec.md](spec.md).
+- Project overview, architecture, and setup: [README.md](README.md).
 - Use the [Kidamooz admin skill](.agents/skills/kidamooz-admin/SKILL.md) for panel development.
 - This project uses Angular 21. Do not assume it shares versions or patterns with the Angular 20 app.
 - Pages belong in `src/app/features`, server communication in `src/app/core/services`, and models in `src/app/core/models`.
@@ -23,6 +23,11 @@ This guide applies to every file in this project.
 - Every product idea, proposed capability, or materially uncertain solution MUST complete Idea Assessment before entering SDD: `$speckit-assess-intake`, `$speckit-assess-research`, `$speckit-assess-define`, `$speckit-assess-shape`, and `$speckit-assess-decide`, in that order.
 - Keep assessment artifacts in `.specify/assessments/<slug>/`. Only a `go` decision with explicit scope MAY move to `$speckit-specify`. A `needs-clarification` or `kill` decision MUST stop implementation until the decision artifact is updated to `go`.
 - Documentation-only edits that do not change product behavior may skip SDD. All other exceptions require an explicit user instruction recorded in the task conversation.
+
+## Product Invariants
+
+- Root-level `spec.md` files are not project documentation. Feature specifications MUST live at `specs/<feature>/spec.md` and be created through the Spec Kit workflow.
+- For a pending story with `coverChoice === 'ai_free'`, an administrator MUST select and upload the final cover before approval. A failed cover upload MUST prevent approval, and the uploaded cover URL MUST be included in the approval request.
 
 ## Secret Safety
 
