@@ -1,59 +1,102 @@
-# Admin
+# Kidamooz Admin
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.18.
+Kidamooz Admin is the operational control panel for the Kidamooz storytelling platform. It provides
+authenticated workflows for stories, member submissions, categories, challenges, audiences, notifications,
+members, administrators, and audit history.
 
-## Development server
+## Technology
 
-To start a local development server, run:
+- Angular 21 and TypeScript
+- Angular Router and reactive forms
+- RxJS and Vitest
+- Docker and Liara deployment configuration
 
-```bash
-ng serve
+## Architecture
+
+```text
+src/app/
+├── core/
+│   ├── models/      API contracts used by the panel
+│   └── services/    Authentication and backend communication
+├── features/        Lazily loaded administration areas
+├── layout/          Authenticated panel shell
+└── shared/          Reusable controls, pipes, badges, and editors
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+The backend is authoritative for authorization and validation. Route guards and form validation improve the
+operator experience but do not replace server-side enforcement.
 
-## Code scaffolding
+## Requirements and Development
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+- Node.js 20 or newer
+- npm 10 or a compatible release
+- A reachable Kidamooz backend for non-mock development
 
 ```bash
-ng generate --help
+npm install
+npm start
 ```
 
-## Building
+The panel is served at `http://localhost:4200` by default. Development API configuration is in
+`src/environments/environment.ts`.
 
-To build the project run:
+## Build and Test
 
 ```bash
-ng build
+npm run build
+npm test -- --watch=false
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+The project currently has no lint script. Behavior changes should include focused tests for relevant form,
+service, permission, loading, and failure states.
 
-## Running unit tests
+## AI Operations and AI-Assisted Development
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+The panel is the management surface for AI-related configuration and reporting. Model rates, safety margins,
+reservation limits, usage reporting, and manual credit adjustments must be served by authenticated backend
+APIs and recorded in audit history. Provider credentials and financial calculations must never be implemented
+in browser code.
 
-```bash
-ng test
+This repository is also developed with AI assistance. AI-produced changes remain subject to the same review,
+authorization, testing, and Spec Kit convergence requirements as human-written changes.
+
+## Spec-Driven Development
+
+This repository uses [GitHub Spec Kit](https://github.com/github/spec-kit) with the Codex integration.
+Instructions are in [AGENTS.md](AGENTS.md), and engineering principles are in
+[the constitution](.specify/memory/constitution.md).
+
+```text
+$speckit-specify
+$speckit-clarify
+$speckit-plan
+$speckit-tasks
+$speckit-analyze
+$speckit-implement
+$speckit-converge
 ```
 
-## Running end-to-end tests
+Feature artifacts live in `specs/<feature>/`. Implementation begins only after the specification, plan, and
+tasks exist, and finishes only after convergence reports `Converged`.
 
-For end-to-end (e2e) testing, run:
+## Idea Assessment
 
-```bash
-ng e2e
+```text
+$speckit-assess-intake
+$speckit-assess-research
+$speckit-assess-define
+$speckit-assess-shape
+$speckit-assess-decide
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Artifacts live in `.specify/assessments/<slug>/`. Only a documented `go` decision enters development.
 
-## Additional Resources
+## Security
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Never commit credentials, tokens, production environment files, private user data, or provider response
+bodies. Administrative and financial actions must be authorized, auditable, and protected from duplicate
+submission.
+
+## License
+
+No public license has been declared in this repository.
