@@ -3,7 +3,6 @@
 This guide applies to every file in this project.
 
 - Project overview, architecture, and setup: [README.md](README.md).
-- Use the [Kidamooz admin skill](.agents/skills/kidamooz-admin/SKILL.md) for panel development.
 - This project uses Angular 21. Do not assume it shares versions or patterns with the Angular 20 app.
 - Pages belong in `src/app/features`, server communication in `src/app/core/services`, and models in `src/app/core/models`.
 - Preserve routes and authentication guards in `src/app/app.routes.ts`. Client guards do not replace server authorization.
